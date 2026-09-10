@@ -1,22 +1,27 @@
 import { useEffect, useState } from "react";
+import clsx from "clsx";
+import { CalendarCheck2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ServicioCard from "../components/ServicioCard.jsx";
 import SelectorHorario from "../components/SelectorHorario.jsx";
 import FormularioPaciente from "../components/FormularioPaciente.jsx";
+import Button from "../components/admin/ui/Button.jsx";
+import Card from "../components/admin/ui/Card.jsx";
+import Stepper from "../components/admin/ui/Stepper.jsx";
 
 const SUPABASE_FUNCTIONS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/crear-cita`;
+const STEPS = ["Tratamiento", "Horario", "Tus datos", "Confirmación"];
 
-function proximosDias(cantidad = 14) {
+function proximosDias(cantidad = 21) {
   const dias = [];
   const hoy = new Date();
   // Normalizamos a medianoche: si no, "hoy" lleva la hora exacta actual y,
   // como esta función se vuelve a ejecutar en cada render, cada día generado
-  // tendría un timestamp distinto en cada pasada. Eso rompe el <select>
-  // controlado de más abajo: su "value" (guardado en el render anterior) deja
-  // de coincidir con cualquier <option> nueva y el navegador cae por defecto
-  // a la primera opción, aunque el estado interno sí tenga el día correcto.
+  // tendría un timestamp distinto en cada pasada. Eso rompe la tira de días
+  // controlada de más abajo: su selección (guardada en el render anterior)
+  // deja de coincidir con ningún día nuevo y salta de vuelta al primero.
   hoy.setHours(0, 0, 0, 0);
   for (let i = 0; i < cantidad; i++) {
     const d = new Date(hoy);
@@ -27,7 +32,7 @@ function proximosDias(cantidad = 14) {
 }
 
 export default function Reservar() {
-  const [paso, setPaso] = useState(1);
+  const [paso, setPaso] = useState(0);
   const [servicios, setServicios] = useState([]);
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
   const [fechaSeleccionada, setFechaSeleccionada] = useState(null);
@@ -81,7 +86,7 @@ export default function Reservar() {
       if (!respuesta.ok) throw new Error(data.error || "No se pudo completar la reserva");
 
       setCitaConfirmada(data.cita);
-      setPaso(4);
+      setPaso(3);
     } catch (err) {
       setErrorReserva(err.message);
     } finally {
@@ -90,158 +95,139 @@ export default function Reservar() {
   }
 
   return (
-    <>
+    <div className="site-app min-h-dvh bg-canvas">
       <Navbar />
-      <div className="container py-5">
-        <div className="row justify-content-center">
-          <div className="col-lg-7">
-            <div className="card-issi p-4 p-md-5">
-              <div className="stepper">
-                <div className={`step-dot ${paso >= 1 ? "active" : ""}`}></div>
-                <div className={`step-dot ${paso >= 2 ? "active" : ""}`}></div>
-                <div className={`step-dot ${paso >= 3 ? "active" : ""}`}></div>
-              </div>
+      <div className="mx-auto max-w-2xl px-4 py-8 lg:px-8 lg:py-12">
+        <Card className="overflow-hidden pt-5 lg:pt-6">
+          {paso < 3 && <Stepper steps={STEPS} current={paso} />}
 
-              {/* Paso 1: servicio */}
-              {paso === 1 && (
-                <>
-                  <h5 className="mb-3">Elige tu sesión</h5>
-                  <div className="row g-3">
-                    {servicios.map((servicio) => (
-                      <div className="col-md-6" key={servicio.id}>
-                        <ServicioCard
-                          servicio={servicio}
-                          seleccionado={servicioSeleccionado?.id === servicio.id}
-                          onSelect={setServicioSeleccionado}
-                        />
-                      </div>
-                    ))}
-                  </div>
-                  <button
-                    className="btn btn-accent w-100 mt-4"
-                    disabled={!servicioSeleccionado}
-                    onClick={() => setPaso(2)}
-                  >
-                    Continuar
-                  </button>
-                </>
-              )}
-
-              {/* Paso 2: horario */}
-              {paso === 2 && (
-                <>
-                  <h5 className="mb-3">Elige un horario</h5>
-
-                  <div className="mb-3">
-                    <label className="form-label-issi">Día</label>
-                    <select
-                      className="form-select-issi"
-                      value={fechaSeleccionada ? fechaSeleccionada.toISOString() : ""}
-                      onChange={(e) => {
-                        setFechaSeleccionada(new Date(e.target.value));
-                        setHoraSeleccionada(null);
-                      }}
-                    >
-                      <option value="" disabled>
-                        Selecciona un día
-                      </option>
-                      {proximosDias().map((dia) => (
-                        <option key={dia.toISOString()} value={dia.toISOString()}>
-                          {dia.toLocaleDateString("es-ES", {
-                            weekday: "long",
-                            day: "numeric",
-                            month: "long",
-                          })}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  {fechaSeleccionada && (
-                    <SelectorHorario
-                      fecha={fechaSeleccionada}
-                      servicio={servicioSeleccionado}
-                      horaSeleccionada={horaSeleccionada}
-                      onSelect={setHoraSeleccionada}
+          <div className="px-4 pb-6 lg:px-8">
+            {/* Paso 0: servicio */}
+            {paso === 0 && (
+              <>
+                <h1 className="mb-4 font-display text-[20px] font-semibold tracking-display text-ink">Elige tu sesión</h1>
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  {servicios.map((servicio) => (
+                    <ServicioCard
+                      key={servicio.id}
+                      servicio={servicio}
+                      seleccionado={servicioSeleccionado?.id === servicio.id}
+                      onSelect={setServicioSeleccionado}
                     />
-                  )}
-
-                  <div className="d-flex gap-3 mt-4">
-                    <button className="btn btn-outline-issi" onClick={() => setPaso(1)}>
-                      Atrás
-                    </button>
-                    <button
-                      className="btn btn-accent flex-grow-1"
-                      disabled={!horaSeleccionada}
-                      onClick={() => setPaso(3)}
-                    >
-                      Continuar
-                    </button>
-                  </div>
-                </>
-              )}
-
-              {/* Paso 3: datos del paciente */}
-              {paso === 3 && (
-                <>
-                  <h5 className="mb-3">Tus datos</h5>
-                  <FormularioPaciente
-                    datos={datosPaciente}
-                    onChange={setDatosPaciente}
-                    onSubmit={confirmarReserva}
-                    enviando={enviando}
-                  />
-                  {errorReserva && <div className="text-error mt-3">{errorReserva}</div>}
-                  <button
-                    type="button"
-                    className="btn btn-outline-issi w-100 mt-3"
-                    onClick={() => setPaso(2)}
-                    disabled={enviando}
-                  >
-                    Atrás
-                  </button>
-                </>
-              )}
-
-              {/* Paso 4: confirmación */}
-              {paso === 4 && citaConfirmada && (
-                <div className="text-center py-3">
-                  <div className="confirm-icon">
-                    <i className="bi bi-check-lg"></i>
-                  </div>
-                  <h5>¡Cita reservada!</h5>
-                  <p style={{ color: "var(--text-2)" }}>
-                    {servicioSeleccionado.nombre} ·{" "}
-                    {fechaSeleccionada.toLocaleDateString("es-ES", {
-                      weekday: "long",
-                      day: "numeric",
-                      month: "long",
-                    })}{" "}
-                    · {horaSeleccionada}
-                  </p>
-                  <hr className="divider my-3" />
-                  {datosPaciente.email && (
-                    <p style={{ color: "var(--text-3)", fontSize: "0.85rem" }}>
-                      Te hemos enviado la confirmación por email con el enlace para cancelar tu
-                      cita.
+                  ))}
+                  {servicios.length === 0 && (
+                    <p className="col-span-full py-6 text-center text-[13.5px] text-ink-faint">
+                      Todavía no hay servicios configurados.
                     </p>
                   )}
-                  <p style={{ color: "var(--text-3)", fontSize: "0.85rem" }}>
-                    Guarda este enlace por si necesitas cancelar tu cita:
-                  </p>
-                  <a
-                    href={`${window.location.origin}/cancelar?token=${citaConfirmada.token_cancelacion}`}
-                    style={{ color: "var(--accent)", wordBreak: "break-all", fontSize: "0.85rem" }}
-                  >
-                    {window.location.origin}/cancelar?token={citaConfirmada.token_cancelacion}
-                  </a>
                 </div>
-              )}
-            </div>
+                <Button variant="accent" block disabled={!servicioSeleccionado} onClick={() => setPaso(1)} className="mt-5">
+                  Continuar
+                </Button>
+              </>
+            )}
+
+            {/* Paso 1: horario */}
+            {paso === 1 && (
+              <>
+                <h1 className="mb-4 font-display text-[20px] font-semibold tracking-display text-ink">Elige un horario</h1>
+
+                <div className="mb-5">
+                  <p className="mb-2.5 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">Día</p>
+                  <div className="no-scrollbar -mx-1 flex gap-2 overflow-x-auto px-1 pb-1">
+                    {proximosDias().map((dia) => {
+                      const activo = fechaSeleccionada && dia.getTime() === fechaSeleccionada.getTime();
+                      return (
+                        <button
+                          key={dia.toISOString()}
+                          type="button"
+                          onClick={() => {
+                            setFechaSeleccionada(dia);
+                            setHoraSeleccionada(null);
+                          }}
+                          className={clsx(
+                            "flex w-[52px] shrink-0 flex-col items-center gap-1 rounded-2xl py-2.5 transition-all duration-150 ease-out active:scale-95",
+                            activo ? "bg-ink text-white shadow-soft" : "border border-line bg-white text-ink hover:border-line-strong"
+                          )}
+                        >
+                          <span className={clsx("text-[10.5px] font-medium uppercase tracking-eyebrow", activo ? "text-white/70" : "text-ink-faint")}>
+                            {dia.toLocaleDateString("es-ES", { weekday: "short" }).replace(".", "")}
+                          </span>
+                          <span className="text-[16px] font-semibold tabular-nums">{dia.getDate()}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {fechaSeleccionada && (
+                  <SelectorHorario
+                    fecha={fechaSeleccionada}
+                    servicio={servicioSeleccionado}
+                    horaSeleccionada={horaSeleccionada}
+                    onSelect={setHoraSeleccionada}
+                  />
+                )}
+
+                <div className="mt-5 flex gap-2.5">
+                  <Button variant="secondary" onClick={() => setPaso(0)}>
+                    Atrás
+                  </Button>
+                  <Button variant="accent" block disabled={!horaSeleccionada} onClick={() => setPaso(2)}>
+                    Continuar
+                  </Button>
+                </div>
+              </>
+            )}
+
+            {/* Paso 2: datos del paciente */}
+            {paso === 2 && (
+              <>
+                <h1 className="mb-4 font-display text-[20px] font-semibold tracking-display text-ink">Tus datos</h1>
+                <FormularioPaciente
+                  datos={datosPaciente}
+                  onChange={setDatosPaciente}
+                  onSubmit={confirmarReserva}
+                  enviando={enviando}
+                />
+                {errorReserva && <p className="mt-3 text-[13px] text-rose-600">{errorReserva}</p>}
+                <Button variant="secondary" block onClick={() => setPaso(1)} disabled={enviando} className="mt-3">
+                  Atrás
+                </Button>
+              </>
+            )}
+
+            {/* Paso 3: confirmación */}
+            {paso === 3 && citaConfirmada && (
+              <div className="flex flex-col items-center py-4 text-center">
+                <span className="flex h-16 w-16 items-center justify-center rounded-full bg-sage-50 text-sage-600">
+                  <CalendarCheck2 size={28} strokeWidth={2} />
+                </span>
+                <h1 className="mt-5 font-display text-[20px] font-semibold tracking-display text-ink">¡Cita reservada!</h1>
+                <p className="mt-1.5 text-[14px] text-ink-muted">
+                  {servicioSeleccionado.nombre} ·{" "}
+                  {fechaSeleccionada.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} ·{" "}
+                  {horaSeleccionada}
+                </p>
+                <div className="my-5 h-px w-full bg-line" />
+                {datosPaciente.email && (
+                  <p className="text-[13px] text-ink-faint">
+                    Te hemos enviado la confirmación por email con el enlace para cancelar tu cita.
+                  </p>
+                )}
+                <p className="mt-2 text-[13px] text-ink-faint">Guarda este enlace por si necesitas cancelar tu cita:</p>
+                <a
+                  href={`${window.location.origin}/cancelar?token=${citaConfirmada.token_cancelacion}`}
+                  className="mt-1.5 break-all text-[13px] font-medium text-sage-700"
+                >
+                  {window.location.origin}/cancelar?token={citaConfirmada.token_cancelacion}
+                </a>
+              </div>
+            )}
           </div>
-        </div>
+        </Card>
       </div>
       <Footer />
-    </>
+    </div>
   );
 }

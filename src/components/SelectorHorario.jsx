@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import clsx from "clsx";
 import { supabase } from "../lib/supabaseClient";
 
 // Genera los slots de "hora_inicio" a "hora_fin" en intervalos de "duracionMin"
@@ -79,31 +80,49 @@ export default function SelectorHorario({ fecha, servicio, horaSeleccionada, onS
   }, [fecha, servicio]);
 
   if (cargando) {
-    return <p style={{ color: "var(--text-2)" }}>Buscando horarios disponibles...</p>;
+    return <p className="py-4 text-center text-[13.5px] text-ink-faint">Buscando horarios disponibles…</p>;
   }
 
   if (slots.length === 0) {
-    return <p style={{ color: "var(--text-2)" }}>No hay horarios disponibles ese día.</p>;
+    return <p className="py-4 text-center text-[13.5px] text-ink-faint">No hay horarios disponibles ese día.</p>;
   }
 
+  const morning = slots.filter((h) => h < "14:00");
+  const afternoon = slots.filter((h) => h >= "14:00");
+
+  const Group = ({ title, items }) =>
+    items.length > 0 && (
+      <div className="mb-4">
+        <p className="mb-2.5 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">{title}</p>
+        <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
+          {items.map((hora) => {
+            const ocupado = ocupados.has(hora);
+            const seleccionado = horaSeleccionada === hora;
+            return (
+              <button
+                key={hora}
+                type="button"
+                disabled={ocupado}
+                onClick={() => onSelect(hora)}
+                className={clsx(
+                  "h-11 rounded-xl text-[13.5px] font-medium tabular-nums transition-all duration-150 ease-out active:scale-95",
+                  ocupado && "cursor-not-allowed bg-canvas-sunken text-ink-faint line-through",
+                  !ocupado && seleccionado && "bg-ink text-white shadow-soft",
+                  !ocupado && !seleccionado && "border border-line bg-white text-ink hover:border-sage-300 hover:bg-sage-50/50"
+                )}
+              >
+                {hora}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    );
+
   return (
-    <div className="row g-2">
-      {slots.map((hora) => {
-        const ocupado = ocupados.has(hora);
-        const seleccionado = horaSeleccionada === hora;
-        return (
-          <div className="col-4" key={hora}>
-            <button
-              type="button"
-              className={`slot-btn ${seleccionado ? "selected" : ""}`}
-              disabled={ocupado}
-              onClick={() => onSelect(hora)}
-            >
-              {hora}
-            </button>
-          </div>
-        );
-      })}
+    <div>
+      <Group title="Mañana" items={morning} />
+      <Group title="Tarde" items={afternoon} />
     </div>
   );
 }

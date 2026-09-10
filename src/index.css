@@ -422,3 +422,133 @@ label.form-label-issi {
   background: rgba(166, 173, 166, 0.15);
   color: var(--text-2);
 }
+
+/* ======================================================================
+   Sistema visual Tailwind — panel de gestión (/admin) y sitio público de
+   reservas (Home/Reservar/Cancelar). El preflight global de Tailwind está
+   desactivado (tailwind.config.js) para no pisar el Reboot de Bootstrap
+   que sigue usando Login.jsx, así que este bloque incluye su propio reset,
+   con ámbito a .admin-app y .site-app (los wrappers raíz de cada zona) para
+   no afectar a Login.jsx.
+   ====================================================================== */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:is(.admin-app, .site-app),
+:is(.admin-app, .site-app) *,
+:is(.admin-app, .site-app) *::before,
+:is(.admin-app, .site-app) *::after {
+  box-sizing: border-box;
+  border-width: 0;
+  border-style: solid;
+  border-color: theme("colors.line.DEFAULT");
+}
+
+:is(.admin-app, .site-app) {
+  margin: 0;
+  font-family: theme("fontFamily.sans");
+  color: theme("colors.ink.DEFAULT");
+  background: theme("colors.canvas.DEFAULT");
+  -webkit-font-smoothing: antialiased;
+  -webkit-tap-highlight-color: transparent;
+  min-height: 100dvh;
+  line-height: 1.5;
+}
+
+:is(.admin-app, .site-app) h1,
+:is(.admin-app, .site-app) h2,
+:is(.admin-app, .site-app) h3,
+:is(.admin-app, .site-app) h4,
+:is(.admin-app, .site-app) p,
+:is(.admin-app, .site-app) figure {
+  margin: 0;
+}
+
+:is(.admin-app, .site-app) ul,
+:is(.admin-app, .site-app) ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+:is(.admin-app, .site-app) button,
+:is(.admin-app, .site-app) input,
+:is(.admin-app, .site-app) textarea,
+:is(.admin-app, .site-app) select {
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+:is(.admin-app, .site-app) button {
+  cursor: pointer;
+  text-align: inherit;
+}
+:is(.admin-app, .site-app) button:disabled {
+  cursor: not-allowed;
+}
+
+:is(.admin-app, .site-app) a {
+  color: inherit;
+  text-decoration: none;
+}
+
+:is(.admin-app, .site-app) img,
+:is(.admin-app, .site-app) svg {
+  display: block;
+  max-width: 100%;
+}
+
+:is(.admin-app, .site-app) :focus-visible {
+  outline: 2px solid theme("colors.sage.500");
+  outline-offset: 2px;
+  border-radius: 6px;
+}
+
+:is(.admin-app, .site-app) ::selection {
+  background: theme("colors.sage.200");
+}
+
+:is(.admin-app, .site-app) ::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+:is(.admin-app, .site-app) ::-webkit-scrollbar-track {
+  background: transparent;
+}
+:is(.admin-app, .site-app) ::-webkit-scrollbar-thumb {
+  background: rgba(60, 60, 67, 0.18);
+  border-radius: 8px;
+}
+:is(.admin-app, .site-app) ::-webkit-scrollbar-thumb:hover {
+  background: rgba(60, 60, 67, 0.3);
+}
+
+:is(.admin-app, .site-app) .no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+:is(.admin-app, .site-app) .no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+:is(.admin-app, .site-app) .tracking-display {
+  letter-spacing: -0.02em;
+}
+:is(.admin-app, .site-app) .tracking-eyebrow {
+  letter-spacing: 0.02em;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :is(.admin-app, .site-app) *,
+  :is(.admin-app, .site-app) *::before,
+  :is(.admin-app, .site-app) *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

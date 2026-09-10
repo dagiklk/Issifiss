@@ -1,6 +1,11 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext.jsx";
+import Card from "../../components/admin/ui/Card.jsx";
+import Button from "../../components/admin/ui/Button.jsx";
+
+const inputClass =
+  "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none";
 
 export default function Login() {
   const { login } = useAuth();
@@ -31,44 +36,42 @@ export default function Login() {
   }
 
   return (
-    <div
-      className="container d-flex align-items-center justify-content-center"
-      style={{ minHeight: "100vh" }}
-    >
-      <div className="col-md-4">
-        <div className="card-issi p-4 p-md-5">
-          <h5 className="mb-1">issifiss</h5>
-          <p style={{ color: "var(--text-2)", fontSize: "0.9rem" }} className="mb-4">
-            Acceso para el equipo
-          </p>
+    <div className="site-app flex min-h-dvh items-center justify-center bg-canvas px-4">
+      <div className="w-full max-w-sm">
+        <Card className="p-6 lg:p-8">
+          <h1 className="font-display text-[19px] font-semibold tracking-display text-ink">
+            issi<span className="text-sage-600">fiss</span>
+          </h1>
+          <p className="mb-6 mt-1 text-[13.5px] text-ink-muted">Acceso para el equipo</p>
 
-          <form onSubmit={handleSubmit}>
-            <div className="mb-3">
-              <label className="form-label-issi">Email</label>
+          <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Email</label>
               <input
-                className="form-control-issi"
+                className={inputClass}
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tucorreo@ejemplo.com"
+                autoFocus
               />
             </div>
-            <div className="mb-3">
-              <label className="form-label-issi">Contraseña</label>
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Contraseña</label>
               <input
-                className="form-control-issi"
+                className={inputClass}
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="••••••••"
               />
             </div>
-            {error && <div className="text-error mb-3">{error}</div>}
-            <button className="btn btn-accent w-100" disabled={cargando}>
-              {cargando ? "Entrando..." : "Entrar"}
-            </button>
+            {error && <p className="text-[12.5px] text-rose-600">{error}</p>}
+            <Button type="submit" variant="accent" block disabled={cargando} className="mt-1">
+              {cargando ? "Entrando…" : "Entrar"}
+            </Button>
           </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

@@ -6,8 +6,8 @@ export default function ProtectedRoute({ children }) {
 
   if (loading) {
     return (
-      <div className="d-flex justify-content-center align-items-center" style={{ minHeight: "60vh" }}>
-        <span style={{ color: "var(--text-2)" }}>Cargando...</span>
+      <div className="site-app flex min-h-dvh items-center justify-center bg-canvas">
+        <span className="text-[13.5px] text-ink-muted">Cargando…</span>
       </div>
     );
   }

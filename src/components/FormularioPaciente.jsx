@@ -1,4 +1,8 @@
 import { useState } from "react";
+import Button from "./admin/ui/Button.jsx";
+
+const inputClass =
+  "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none";
 
 export default function FormularioPaciente({ datos, onChange, onSubmit, enviando }) {
   const [errores, setErrores] = useState({});
@@ -22,34 +26,34 @@ export default function FormularioPaciente({ datos, onChange, onSubmit, enviando
   }
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-3">
-        <label className="form-label-issi">Nombre completo</label>
+    <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <div>
+        <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Nombre completo</label>
         <input
-          className="form-control-issi"
+          className={inputClass}
           type="text"
           placeholder="Tu nombre y apellidos"
           value={datos.nombre || ""}
           onChange={(e) => onChange({ ...datos, nombre: e.target.value })}
         />
-        {errores.nombre && <div className="text-error">{errores.nombre}</div>}
+        {errores.nombre && <p className="mt-1.5 text-[12.5px] text-rose-600">{errores.nombre}</p>}
       </div>
 
-      <div className="row g-3 mb-3">
-        <div className="col-md-6">
-          <label className="form-label-issi">Email</label>
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div>
+          <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Email</label>
           <input
-            className="form-control-issi"
+            className={inputClass}
             type="email"
             placeholder="tucorreo@ejemplo.com"
             value={datos.email || ""}
             onChange={(e) => onChange({ ...datos, email: e.target.value })}
           />
         </div>
-        <div className="col-md-6">
-          <label className="form-label-issi">Teléfono</label>
+        <div>
+          <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Teléfono</label>
           <input
-            className="form-control-issi"
+            className={inputClass}
             type="tel"
             placeholder="600 000 000"
             value={datos.telefono || ""}
@@ -57,12 +61,12 @@ export default function FormularioPaciente({ datos, onChange, onSubmit, enviando
           />
         </div>
       </div>
-      {errores.contacto && <div className="text-error mb-3">{errores.contacto}</div>}
+      {errores.contacto && <p className="text-[12.5px] text-rose-600">{errores.contacto}</p>}
 
-      <div className="mb-3">
-        <label className="form-label-issi">Motivo de consulta (opcional)</label>
+      <div>
+        <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Motivo de consulta (opcional)</label>
         <textarea
-          className="form-control-issi"
+          className={`${inputClass} h-auto resize-none py-2.5`}
           rows={3}
           placeholder="Cuéntanos brevemente qué te ocurre"
           value={datos.notas || ""}
@@ -70,31 +74,28 @@ export default function FormularioPaciente({ datos, onChange, onSubmit, enviando
         />
       </div>
 
-      <div className="form-check mb-3">
-        <input
-          className="form-check-input"
-          type="checkbox"
-          id="consentimiento"
-          checked={datos.consentimientoRGPD || false}
-          onChange={(e) => onChange({ ...datos, consentimientoRGPD: e.target.checked })}
-        />
-        <label
-          className="form-check-label"
-          htmlFor="consentimiento"
-          style={{ color: "var(--text-2)", fontSize: "0.85rem" }}
-        >
-          Acepto el tratamiento de mis datos personales y de salud según la{" "}
-          <a href="/privacidad" style={{ color: "var(--accent)" }}>
-            política de privacidad
-          </a>
-          .
+      <div>
+        <label className="flex cursor-pointer items-start gap-2.5">
+          <input
+            type="checkbox"
+            className="mt-0.5 h-4 w-4 shrink-0 rounded border-line-strong accent-sage-600"
+            checked={datos.consentimientoRGPD || false}
+            onChange={(e) => onChange({ ...datos, consentimientoRGPD: e.target.checked })}
+          />
+          <span className="text-[13px] leading-relaxed text-ink-muted">
+            Acepto el tratamiento de mis datos personales y de salud según la{" "}
+            <a href="/privacidad" className="font-medium text-sage-700 underline underline-offset-2">
+              política de privacidad
+            </a>
+            .
+          </span>
         </label>
-        {errores.consentimiento && <div className="text-error">{errores.consentimiento}</div>}
+        {errores.consentimiento && <p className="mt-1.5 text-[12.5px] text-rose-600">{errores.consentimiento}</p>}
       </div>
 
-      <button type="submit" className="btn btn-accent w-100" disabled={enviando}>
-        {enviando ? "Reservando..." : "Confirmar reserva"}
-      </button>
+      <Button type="submit" variant="accent" block disabled={enviando}>
+        {enviando ? "Reservando…" : "Confirmar reserva"}
+      </Button>
     </form>
   );
 }
