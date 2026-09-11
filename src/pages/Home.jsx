@@ -98,8 +98,22 @@ export default function Home() {
 
       {/* Quién soy */}
       <section className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
-        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,280px)_1fr] lg:gap-14">
-          <div className="order-2 mx-auto flex w-full max-w-[280px] flex-col gap-3 lg:order-1 lg:mx-0">
+        <div
+          className="grid grid-cols-1 gap-8 [grid-template-areas:'heading'_'photo'_'rest']
+            lg:grid-cols-[minmax(0,280px)_1fr] lg:items-start lg:gap-x-14 lg:gap-y-6
+            lg:[grid-template-areas:'photo_heading'_'photo_rest']"
+        >
+          <div className="[grid-area:heading]">
+            <span className="inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12.5px] font-medium text-sage-700">
+              Quién soy
+            </span>
+            <h2 className="mb-1.5 mt-4 font-display text-[24px] font-semibold tracking-display text-ink">
+              Isaac Rodríguez
+            </h2>
+            <p className="text-[14px] font-medium text-sage-700">Fisioterapeuta</p>
+          </div>
+
+          <div className="mx-auto flex w-full max-w-[280px] flex-col gap-3 [grid-area:photo] lg:mx-0">
             <img
               src={isaacPerfil}
               alt="Isaac Rodríguez, fisioterapeuta, con la beca de graduación de la Universidad Francisco de Vitoria"
@@ -119,14 +133,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div className="order-1 lg:order-2">
-            <span className="inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12.5px] font-medium text-sage-700">
-              Quién soy
-            </span>
-            <h2 className="mb-1.5 mt-4 font-display text-[24px] font-semibold tracking-display text-ink">
-              Isaac Rodríguez
-            </h2>
-            <p className="mb-3 text-[14px] font-medium text-sage-700">Fisioterapeuta</p>
+          <div className="[grid-area:rest]">
             <p className="text-[14.5px] leading-relaxed text-ink-muted">
               Graduado en Fisioterapia por la Universidad Francisco de Vitoria y Máster en
               Fisioterapia Invasiva y Ecografía por la Universidad Europea. Formación académica y
