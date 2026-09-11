@@ -4,7 +4,7 @@ import Button from "./admin/ui/Button.jsx";
 const inputClass =
   "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none";
 
-export default function FormularioPaciente({ datos, onChange, onSubmit, enviando }) {
+export default function FormularioPaciente({ datos, onChange, onSubmit, enviando, pedirPassword }) {
   const [errores, setErrores] = useState({});
 
   function validar() {
@@ -12,6 +12,12 @@ export default function FormularioPaciente({ datos, onChange, onSubmit, enviando
     if (!datos.nombre?.trim()) nuevosErrores.nombre = "Introduce tu nombre";
     if (!datos.email?.trim() && !datos.telefono?.trim()) {
       nuevosErrores.contacto = "Indica un email o un teléfono de contacto";
+    }
+    if (pedirPassword) {
+      if (!datos.email?.trim()) nuevosErrores.email = "El email es obligatorio para crear tu cuenta";
+      if (!datos.password || datos.password.length < 6) {
+        nuevosErrores.password = "La contraseña debe tener al menos 6 caracteres";
+      }
     }
     if (!datos.consentimientoRGPD) {
       nuevosErrores.consentimiento = "Debes aceptar el tratamiento de tus datos para continuar";
@@ -49,6 +55,7 @@ export default function FormularioPaciente({ datos, onChange, onSubmit, enviando
             value={datos.email || ""}
             onChange={(e) => onChange({ ...datos, email: e.target.value })}
           />
+          {errores.email && <p className="mt-1.5 text-[12.5px] text-rose-600">{errores.email}</p>}
         </div>
         <div>
           <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Teléfono</label>
@@ -62,6 +69,23 @@ export default function FormularioPaciente({ datos, onChange, onSubmit, enviando
         </div>
       </div>
       {errores.contacto && <p className="text-[12.5px] text-rose-600">{errores.contacto}</p>}
+
+      {pedirPassword && (
+        <div>
+          <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Crea una contraseña</label>
+          <input
+            className={inputClass}
+            type="password"
+            placeholder="Mínimo 6 caracteres"
+            value={datos.password || ""}
+            onChange={(e) => onChange({ ...datos, password: e.target.value })}
+          />
+          <p className="mt-1.5 text-[12.5px] text-ink-faint">
+            Así te creamos una cuenta y no tendrás que rellenar tus datos la próxima vez.
+          </p>
+          {errores.password && <p className="mt-1.5 text-[12.5px] text-rose-600">{errores.password}</p>}
+        </div>
+      )}
 
       <div>
         <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Motivo de consulta (opcional)</label>

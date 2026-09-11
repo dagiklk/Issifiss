@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { supabase } from "../lib/supabaseClient";
+import { isPastSlot } from "../utils/dateHelpers.js";
 
 // Genera los slots de "hora_inicio" a "hora_fin" en intervalos de "duracionMin"
 function generarSlots(horaInicio, horaFin, duracionMin) {
@@ -97,18 +98,20 @@ export default function SelectorHorario({ fecha, servicio, horaSeleccionada, onS
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
           {items.map((hora) => {
             const ocupado = ocupados.has(hora);
+            const pasado = !ocupado && isPastSlot(fecha, hora);
             const seleccionado = horaSeleccionada === hora;
             return (
               <button
                 key={hora}
                 type="button"
-                disabled={ocupado}
+                disabled={ocupado || pasado}
                 onClick={() => onSelect(hora)}
                 className={clsx(
                   "h-11 rounded-xl text-[13.5px] font-medium tabular-nums transition-all duration-150 ease-out active:scale-95",
                   ocupado && "cursor-not-allowed bg-canvas-sunken text-ink-faint line-through",
-                  !ocupado && seleccionado && "bg-ink text-white shadow-soft",
-                  !ocupado && !seleccionado && "border border-line bg-white text-ink hover:border-sage-300 hover:bg-sage-50/50"
+                  pasado && "cursor-not-allowed bg-ink/10 text-ink-faint/70",
+                  !ocupado && !pasado && seleccionado && "bg-ink text-white shadow-soft",
+                  !ocupado && !pasado && !seleccionado && "border border-line bg-white text-ink hover:border-sage-300 hover:bg-sage-50/50"
                 )}
               >
                 {hora}

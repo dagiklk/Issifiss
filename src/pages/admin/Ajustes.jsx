@@ -1,14 +1,13 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
-import { Bell, Clock, LogOut, Moon, Palette, Pencil } from "lucide-react";
+import { Bell, LogOut, Moon, Palette, Pencil } from "lucide-react";
 import PageHeader from "../../components/admin/layout/PageHeader.jsx";
 import Card from "../../components/admin/ui/Card.jsx";
 import Avatar from "../../components/admin/ui/Avatar.jsx";
 import Switch from "../../components/admin/ui/Switch.jsx";
 import Button from "../../components/admin/ui/Button.jsx";
+import HorarioEditor from "../../components/admin/settings/HorarioEditor.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
-import { useAppointments } from "../../context/AppointmentsContext.jsx";
-import { DIAS_SEMANA } from "../../lib/clinicData.js";
 import { displayNameFromSession } from "../../utils/dateHelpers.js";
 
 function SectionTitle({ children }) {
@@ -32,23 +31,10 @@ function Row({ icon: Icon, label, value, action, last }) {
 
 export default function Ajustes() {
   const { user, logout } = useAuth();
-  const { disponibilidad } = useAppointments();
   const [notifs, setNotifs] = useState(true);
   const [compact, setCompact] = useState(false);
   const [dark, setDark] = useState(false);
   const name = displayNameFromSession(user);
-
-  // Real weekly hours, sourced from the "disponibilidad" table — Monday first.
-  const horario = useMemo(() => {
-    const order = [1, 2, 3, 4, 5, 6, 0];
-    return order.map((dow) => {
-      const franjas = disponibilidad
-        .filter((f) => f.dia_semana === dow)
-        .sort((a, b) => a.hora_inicio.localeCompare(b.hora_inicio))
-        .map((f) => `${f.hora_inicio.slice(0, 5)}–${f.hora_fin.slice(0, 5)}`);
-      return { dia: DIAS_SEMANA[dow], franjas };
-    });
-  }, [disponibilidad]);
 
   return (
     <div className="mx-auto max-w-2xl pb-8">
@@ -86,17 +72,7 @@ export default function Ajustes() {
 
         <div>
           <SectionTitle>Horario de la clínica</SectionTitle>
-          <Card className="overflow-hidden p-0">
-            {horario.map((d, i) => (
-              <div key={d.dia} className={`flex items-center justify-between px-4 py-3 ${i < horario.length - 1 ? "border-b border-line" : ""}`}>
-                <span className="flex items-center gap-2.5 text-[13.5px] font-medium text-ink">
-                  <Clock size={15} strokeWidth={1.8} className="text-ink-faint" />
-                  {d.dia}
-                </span>
-                <span className="text-[13px] text-ink-muted">{d.franjas.length ? d.franjas.join(" · ") : "Cerrado"}</span>
-              </div>
-            ))}
-          </Card>
+          <HorarioEditor />
         </div>
 
         <Button variant="danger" block onClick={logout} className="mb-4">

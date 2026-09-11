@@ -10,7 +10,11 @@ import NuevaCita from "./pages/admin/NuevaCita.jsx";
 import Pacientes from "./pages/admin/Pacientes.jsx";
 import PacienteDetalle from "./pages/admin/PacienteDetalle.jsx";
 import Ajustes from "./pages/admin/Ajustes.jsx";
+import ClienteLogin from "./pages/cliente/Login.jsx";
+import ClienteRegistro from "./pages/cliente/Registro.jsx";
+import MiCuenta from "./pages/cliente/MiCuenta.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
+import ClientProtectedRoute from "./routes/ClientProtectedRoute.jsx";
 import AdminShell from "./components/admin/layout/AdminShell.jsx";
 
 export default function App() {
@@ -19,6 +23,17 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/reservar" element={<Reservar />} />
       <Route path="/cancelar" element={<Cancelar />} />
+
+      <Route path="/cuenta/login" element={<ClienteLogin />} />
+      <Route path="/cuenta/registro" element={<ClienteRegistro />} />
+      <Route
+        path="/cuenta"
+        element={
+          <ClientProtectedRoute>
+            <MiCuenta />
+          </ClientProtectedRoute>
+        }
+      />
 
       <Route path="/admin/login" element={<Login />} />
 

@@ -9,8 +9,8 @@ const NAV_ID = "bottom-nav-pill";
 
 const PRIMARY = [
   { to: "/admin", label: "Inicio", icon: Home, end: true },
+  { to: "/admin/citas", label: "Citas", icon: ListChecks },
   { to: "/admin/agenda", label: "Agenda", icon: CalendarDays },
-  { to: "/admin/pacientes", label: "Pacientes", icon: Users },
 ];
 
 function NavItem({ to, label, icon: Icon, end, onNavigate }) {
@@ -88,22 +88,22 @@ export default function BottomNav() {
               <button
                 onClick={() => {
                   setMoreOpen(false);
-                  navigate("/admin/citas");
-                }}
-                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[15px] font-medium text-ink transition-colors active:bg-canvas-sunken"
-              >
-                <ListChecks size={19} strokeWidth={1.8} className="text-ink-muted" />
-                Citas
-              </button>
-              <button
-                onClick={() => {
-                  setMoreOpen(false);
                   navigate("/admin/ajustes");
                 }}
                 className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[15px] font-medium text-ink transition-colors active:bg-canvas-sunken"
               >
                 <Settings size={19} strokeWidth={1.8} className="text-ink-muted" />
                 Ajustes
+              </button>
+              <button
+                onClick={() => {
+                  setMoreOpen(false);
+                  navigate("/admin/pacientes");
+                }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[15px] font-medium text-ink transition-colors active:bg-canvas-sunken"
+              >
+                <Users size={19} strokeWidth={1.8} className="text-ink-muted" />
+                Pacientes
               </button>
               <div className="my-2 h-px bg-line" />
               <button

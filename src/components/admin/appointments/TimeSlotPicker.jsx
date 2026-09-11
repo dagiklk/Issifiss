@@ -2,6 +2,7 @@ import clsx from "clsx";
 import { useAppointments } from "../../../context/AppointmentsContext.jsx";
 import EmptyState from "../ui/EmptyState.jsx";
 import { CalendarX } from "lucide-react";
+import { isPastSlot } from "../../../utils/dateHelpers.js";
 
 export default function TimeSlotPicker({ fecha, duracionMin, value, onChange }) {
   const { slotsForDate, horasOcupadas } = useAppointments();
@@ -21,17 +22,19 @@ export default function TimeSlotPicker({ fecha, duracionMin, value, onChange }) 
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
           {items.map((hora) => {
             const taken = ocupadas.has(hora);
+            const pasado = !taken && isPastSlot(fecha, hora);
             const active = value === hora;
             return (
               <button
                 key={hora}
-                disabled={taken}
+                disabled={taken || pasado}
                 onClick={() => onChange(hora)}
                 className={clsx(
                   "h-11 rounded-xl text-[13.5px] font-medium tabular-nums transition-all duration-150 ease-out active:scale-95",
                   taken && "cursor-not-allowed bg-canvas-sunken text-ink-faint line-through",
-                  !taken && active && "bg-ink text-white shadow-soft",
-                  !taken && !active && "border border-line bg-white text-ink hover:border-sage-300 hover:bg-sage-50/50"
+                  pasado && "cursor-not-allowed bg-ink/10 text-ink-faint/70",
+                  !taken && !pasado && active && "bg-ink text-white shadow-soft",
+                  !taken && !pasado && !active && "border border-line bg-white text-ink hover:border-sage-300 hover:bg-sage-50/50"
                 )}
               >
                 {hora}

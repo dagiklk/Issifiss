@@ -473,7 +473,7 @@ label.form-label-issi {
 }
 
 :is(.admin-app, .site-app) button,
-:is(.admin-app, .site-app) input,
+:is(.admin-app, .site-app) input:not([type="checkbox"]):not([type="radio"]),
 :is(.admin-app, .site-app) textarea,
 :is(.admin-app, .site-app) select {
   font: inherit;
@@ -481,6 +481,15 @@ label.form-label-issi {
   background: transparent;
   appearance: none;
   -webkit-appearance: none;
+}
+
+/* Checkboxes/radios keep native appearance (excluded above) so their
+   built-in checkmark and the "accent-*" utility actually render — with
+   appearance:none the browser draws nothing at all, not even a visible box. */
+:is(.admin-app, .site-app) input[type="checkbox"],
+:is(.admin-app, .site-app) input[type="radio"] {
+  font: inherit;
+  border-width: 1px;
 }
 
 :is(.admin-app, .site-app) button {

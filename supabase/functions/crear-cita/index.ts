@@ -223,41 +223,114 @@ serve(async (req: Request) => {
     }
 
     // ---- 4. Buscar o crear el paciente ----
+    // Si quien reserva tiene una cuenta de cliente (envía su propio access
+    // token, no la anon key), la enlazamos a SU paciente en vez de usar el
+    // matching por email/teléfono pensado para invitados — así no se le crea
+    // un paciente duplicado cada vez que reserva.
+    let usuarioAutenticadoId: string | null = null;
+    const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
+    if (token) {
+      const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
+      if (!userError && userData?.user) {
+        usuarioAutenticadoId = userData.user.id;
+      }
+    }
+
     let pacienteId: string;
 
-    const { data: existente } = await supabaseAdmin
-      .from("pacientes")
-      .select("id")
-      .or(
-        [
-          payload.paciente.email ? `email.eq.${payload.paciente.email}` : null,
-          payload.paciente.telefono ? `telefono.eq.${payload.paciente.telefono}` : null,
-        ]
-          .filter(Boolean)
-          .join(",")
-      )
-      .limit(1)
-      .maybeSingle();
-
-    if (existente) {
-      pacienteId = existente.id;
-    } else {
-      const { data: nuevoPaciente, error: pacienteError } = await supabaseAdmin
+    if (usuarioAutenticadoId) {
+      const { data: pacientePropio } = await supabaseAdmin
         .from("pacientes")
-        .insert({
-          nombre: payload.paciente.nombre,
-          telefono: payload.paciente.telefono ?? null,
-          email: payload.paciente.email ?? null,
-          consentimiento_rgpd: true,
-          consentimiento_fecha: new Date().toISOString(),
-        })
         .select("id")
-        .single();
+        .eq("user_id", usuarioAutenticadoId)
+        .maybeSingle();
 
-      if (pacienteError || !nuevoPaciente) {
-        return jsonResponse({ error: "No se pudo registrar el paciente" }, 500);
+      if (pacientePropio) {
+        pacienteId = pacientePropio.id;
+      } else {
+        // Puede que ya hubiera reservado como invitado antes de crear su
+        // cuenta (o antes de confirmar el email): si hay un paciente sin
+        // cuenta enlazada con el mismo email/teléfono, lo adoptamos en vez
+        // de crear uno nuevo duplicado.
+        const { data: pacienteSinEnlazar } = await supabaseAdmin
+          .from("pacientes")
+          .select("id")
+          .is("user_id", null)
+          .or(
+            [
+              payload.paciente.email ? `email.eq.${payload.paciente.email}` : null,
+              payload.paciente.telefono ? `telefono.eq.${payload.paciente.telefono}` : null,
+            ]
+              .filter(Boolean)
+              .join(",")
+          )
+          .limit(1)
+          .maybeSingle();
+
+        if (pacienteSinEnlazar) {
+          const { error: enlazarError } = await supabaseAdmin
+            .from("pacientes")
+            .update({ user_id: usuarioAutenticadoId })
+            .eq("id", pacienteSinEnlazar.id);
+          if (enlazarError) {
+            return jsonResponse({ error: "No se pudo vincular tu cuenta al paciente" }, 500);
+          }
+          pacienteId = pacienteSinEnlazar.id;
+        } else {
+          const { data: nuevoPaciente, error: pacienteError } = await supabaseAdmin
+            .from("pacientes")
+            .insert({
+              nombre: payload.paciente.nombre,
+              telefono: payload.paciente.telefono ?? null,
+              email: payload.paciente.email ?? null,
+              user_id: usuarioAutenticadoId,
+              consentimiento_rgpd: true,
+              consentimiento_fecha: new Date().toISOString(),
+            })
+            .select("id")
+            .single();
+
+          if (pacienteError || !nuevoPaciente) {
+            return jsonResponse({ error: "No se pudo registrar el paciente" }, 500);
+          }
+          pacienteId = nuevoPaciente.id;
+        }
       }
-      pacienteId = nuevoPaciente.id;
+    } else {
+      const { data: existente } = await supabaseAdmin
+        .from("pacientes")
+        .select("id")
+        .or(
+          [
+            payload.paciente.email ? `email.eq.${payload.paciente.email}` : null,
+            payload.paciente.telefono ? `telefono.eq.${payload.paciente.telefono}` : null,
+          ]
+            .filter(Boolean)
+            .join(",")
+        )
+        .limit(1)
+        .maybeSingle();
+
+      if (existente) {
+        pacienteId = existente.id;
+      } else {
+        const { data: nuevoPaciente, error: pacienteError } = await supabaseAdmin
+          .from("pacientes")
+          .insert({
+            nombre: payload.paciente.nombre,
+            telefono: payload.paciente.telefono ?? null,
+            email: payload.paciente.email ?? null,
+            consentimiento_rgpd: true,
+            consentimiento_fecha: new Date().toISOString(),
+          })
+          .select("id")
+          .single();
+
+        if (pacienteError || !nuevoPaciente) {
+          return jsonResponse({ error: "No se pudo registrar el paciente" }, 500);
+        }
+        pacienteId = nuevoPaciente.id;
+      }
     }
 
     // ---- 5. Insertar la cita ----

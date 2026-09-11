@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { CalendarCheck2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { useAuth } from "../context/AuthContext.jsx";
+import { obtenerPacientePropio } from "../lib/clientePaciente.js";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ServicioCard from "../components/ServicioCard.jsx";
@@ -32,6 +34,9 @@ function proximosDias(cantidad = 21) {
 }
 
 export default function Reservar() {
+  const { session, isAdmin, signUp } = useAuth();
+  const clienteLogueado = Boolean(session) && !isAdmin;
+
   const [paso, setPaso] = useState(0);
   const [servicios, setServicios] = useState([]);
   const [servicioSeleccionado, setServicioSeleccionado] = useState(null);
@@ -41,6 +46,7 @@ export default function Reservar() {
   const [enviando, setEnviando] = useState(false);
   const [errorReserva, setErrorReserva] = useState(null);
   const [citaConfirmada, setCitaConfirmada] = useState(null);
+  const [cuentaPendienteConfirmacion, setCuentaPendienteConfirmacion] = useState(false);
 
   useEffect(() => {
     async function cargarServicios() {
@@ -54,6 +60,26 @@ export default function Reservar() {
     cargarServicios();
   }, []);
 
+  // Cliente con cuenta: precargamos sus datos para que no tenga que
+  // rellenarlos de nuevo en el paso "Tus datos".
+  useEffect(() => {
+    if (!clienteLogueado) return;
+    let active = true;
+    obtenerPacientePropio(session.user).then((propio) => {
+      if (!active || !propio) return;
+      setDatosPaciente((prev) => ({
+        ...prev,
+        nombre: prev.nombre || propio.nombre || "",
+        email: prev.email || propio.email || "",
+        telefono: prev.telefono || propio.telefono || "",
+        consentimientoRGPD: prev.consentimientoRGPD || true,
+      }));
+    });
+    return () => {
+      active = false;
+    };
+  }, [clienteLogueado, session]);
+
   async function confirmarReserva() {
     setEnviando(true);
     setErrorReserva(null);
@@ -62,12 +88,35 @@ export default function Reservar() {
     const [h, m] = horaSeleccionada.split(":").map(Number);
     fechaHoraInicio.setHours(h, m, 0, 0);
 
+    let accessToken = clienteLogueado ? session.access_token : null;
+    let cuentaPendiente = false;
+
+    // Invitado que ha puesto contraseña: le creamos la cuenta en el mismo
+    // paso, así la reserva ya queda ligada a ella y no tiene que volver a
+    // rellenar sus datos la próxima vez. Si falla (p.ej. ya tenía cuenta con
+    // ese email), no bloqueamos la reserva: seguimos como invitado.
+    if (!clienteLogueado && datosPaciente.password) {
+      try {
+        const { session: nuevaSesion } = await signUp(datosPaciente.email.trim(), datosPaciente.password, {
+          nombre: datosPaciente.nombre?.trim(),
+          telefono: datosPaciente.telefono?.trim() || "",
+        });
+        if (nuevaSesion) {
+          accessToken = nuevaSesion.access_token;
+        } else {
+          cuentaPendiente = true;
+        }
+      } catch (err) {
+        console.error("No se pudo crear la cuenta, se reserva como invitado:", err);
+      }
+    }
+
     try {
       const respuesta = await fetch(SUPABASE_FUNCTIONS_URL, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+          Authorization: `Bearer ${accessToken || import.meta.env.VITE_SUPABASE_ANON_KEY}`,
         },
         body: JSON.stringify({
           servicio_id: servicioSeleccionado.id,
@@ -86,6 +135,7 @@ export default function Reservar() {
       if (!respuesta.ok) throw new Error(data.error || "No se pudo completar la reserva");
 
       setCitaConfirmada(data.cita);
+      setCuentaPendienteConfirmacion(cuentaPendiente);
       setPaso(3);
     } catch (err) {
       setErrorReserva(err.message);
@@ -184,11 +234,17 @@ export default function Reservar() {
             {paso === 2 && (
               <>
                 <h1 className="mb-4 font-display text-[20px] font-semibold tracking-display text-ink">Tus datos</h1>
+                {clienteLogueado && datosPaciente.nombre && (
+                  <p className="mb-4 rounded-xl bg-sage-50 px-3.5 py-2.5 text-[13px] text-sage-700">
+                    Reservando como <strong>{datosPaciente.nombre}</strong>. Puedes corregir cualquier dato si hace falta.
+                  </p>
+                )}
                 <FormularioPaciente
                   datos={datosPaciente}
                   onChange={setDatosPaciente}
                   onSubmit={confirmarReserva}
                   enviando={enviando}
+                  pedirPassword={!clienteLogueado}
                 />
                 {errorReserva && <p className="mt-3 text-[13px] text-rose-600">{errorReserva}</p>}
                 <Button variant="secondary" block onClick={() => setPaso(1)} disabled={enviando} className="mt-3">
@@ -213,6 +269,13 @@ export default function Reservar() {
                 {datosPaciente.email && (
                   <p className="text-[13px] text-ink-faint">
                     Te hemos enviado la confirmación por email con el enlace para cancelar tu cita.
+                  </p>
+                )}
+                {!clienteLogueado && datosPaciente.password && (
+                  <p className="mt-2 text-[13px] text-ink-faint">
+                    {cuentaPendienteConfirmacion
+                      ? "Además, te hemos enviado un email para confirmar tu nueva cuenta: una vez confirmada, podrás iniciar sesión y ver tus citas en Mi cuenta."
+                      : "Además, te hemos creado una cuenta con tu email: ya has iniciado sesión y puedes ver tus citas en Mi cuenta."}
                   </p>
                 )}
                 <p className="mt-2 text-[13px] text-ink-faint">Guarda este enlace por si necesitas cancelar tu cita:</p>

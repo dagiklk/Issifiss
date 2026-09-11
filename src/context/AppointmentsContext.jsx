@@ -37,6 +37,15 @@ export function AppointmentsProvider({ children }) {
     setPacientes((data || []).map(toUiPaciente));
   }, []);
 
+  const refreshDisponibilidad = useCallback(async () => {
+    const { data, error } = await supabase.from("disponibilidad").select("*").eq("activo", true).order("dia_semana");
+    if (error) {
+      setError(error);
+      return;
+    }
+    setDisponibilidad(data || []);
+  }, []);
+
   useEffect(() => {
     let active = true;
 
@@ -65,13 +74,14 @@ export function AppointmentsProvider({ children }) {
       .channel("admin-citas-pacientes")
       .on("postgres_changes", { event: "*", schema: "public", table: "citas" }, () => refreshCitas())
       .on("postgres_changes", { event: "*", schema: "public", table: "pacientes" }, () => refreshPacientes())
+      .on("postgres_changes", { event: "*", schema: "public", table: "disponibilidad" }, () => refreshDisponibilidad())
       .subscribe();
 
     return () => {
       active = false;
       supabase.removeChannel(channel);
     };
-  }, [refreshCitas, refreshPacientes]);
+  }, [refreshCitas, refreshPacientes, refreshDisponibilidad]);
 
   const crearPaciente = useCallback(async ({ nombre, telefono, email }) => {
     const { data, error } = await supabase
@@ -125,6 +135,28 @@ export function AppointmentsProvider({ children }) {
       }
     },
     [refreshCitas]
+  );
+
+  const guardarFranjasDia = useCallback(
+    async (diaSemana, franjas) => {
+      const { error: deleteError } = await supabase.from("disponibilidad").delete().eq("dia_semana", diaSemana);
+      if (deleteError) throw deleteError;
+
+      if (franjas.length > 0) {
+        const { error: insertError } = await supabase.from("disponibilidad").insert(
+          franjas.map((f) => ({
+            dia_semana: diaSemana,
+            hora_inicio: f.horaInicio,
+            hora_fin: f.horaFin,
+            activo: true,
+          }))
+        );
+        if (insertError) throw insertError;
+      }
+
+      await refreshDisponibilidad();
+    },
+    [refreshDisponibilidad]
   );
 
   const crearCita = useCallback(
@@ -207,6 +239,7 @@ export function AppointmentsProvider({ children }) {
       crearCita,
       crearPaciente,
       actualizarNotasPaciente,
+      guardarFranjasDia,
       getByFecha,
       getByPaciente,
       getProxima,
@@ -216,7 +249,21 @@ export function AppointmentsProvider({ children }) {
       horasLibres,
       refresh: refreshCitas,
     }),
-    [citas, pacientes, servicios, disponibilidad, loading, error, updateStatus, updateNotas, crearCita, crearPaciente, actualizarNotasPaciente, refreshCitas]
+    [
+      citas,
+      pacientes,
+      servicios,
+      disponibilidad,
+      loading,
+      error,
+      updateStatus,
+      updateNotas,
+      crearCita,
+      crearPaciente,
+      actualizarNotasPaciente,
+      guardarFranjasDia,
+      refreshCitas,
+    ]
   );
 
   return <AppointmentsContext.Provider value={value}>{children}</AppointmentsContext.Provider>;

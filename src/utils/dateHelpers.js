@@ -59,6 +59,15 @@ export function displayNameFromSession(user) {
   return "Equipo";
 }
 
+// True if "HH:MM" on the given day (Date or "yyyy-MM-dd") is already in the past.
+export function isPastSlot(dateOrISO, horaStr) {
+  const date = typeof dateOrISO === "string" ? parseISO(dateOrISO) : dateOrISO;
+  const [h, m] = horaStr.split(":").map(Number);
+  const slot = new Date(date);
+  slot.setHours(h, m, 0, 0);
+  return slot.getTime() < Date.now();
+}
+
 export function calcAge(fechaNacimientoISO) {
   const dob = parseISO(fechaNacimientoISO);
   const today = new Date();
