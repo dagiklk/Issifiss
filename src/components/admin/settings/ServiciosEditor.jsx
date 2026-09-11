@@ -80,6 +80,31 @@ export default function ServiciosEditor() {
     }
   }
 
+  async function eliminarExistente(servicio) {
+    const confirmado = window.confirm(
+      `¿Eliminar "${servicio.nombre}"? Esta acción no se puede deshacer.`
+    );
+    if (!confirmado) return;
+
+    setGuardando(servicio.id);
+    try {
+      const { error: dbError } = await supabase.from("servicios").delete().eq("id", servicio.id);
+      if (dbError) {
+        if (dbError.code === "23503") {
+          toast.error("No se puede eliminar: ya tiene citas asociadas. Desactívalo en su lugar.");
+          return;
+        }
+        throw dbError;
+      }
+      setServicios((prev) => prev.filter((s) => s.id !== servicio.id));
+      toast.success("Servicio eliminado");
+    } catch (err) {
+      toast.error(err.message || "No se pudo eliminar el servicio");
+    } finally {
+      setGuardando(null);
+    }
+  }
+
   async function crearNuevo(indice) {
     const servicio = nuevos[indice];
     const error = validar(servicio);
@@ -131,6 +156,15 @@ export default function ServiciosEditor() {
               placeholder="Nombre del servicio"
             />
             <Switch checked={s.activo} onChange={(v) => actualizarCampo(s.id, "activo", v)} label={`Activo ${s.nombre}`} />
+            <button
+              type="button"
+              onClick={() => eliminarExistente(s)}
+              disabled={guardando === s.id}
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-faint hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
+              aria-label={`Eliminar ${s.nombre}`}
+            >
+              <Trash2 size={15} strokeWidth={1.8} />
+            </button>
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2.5">
             <div>
