@@ -106,12 +106,22 @@ export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
             Marcar como completada
           </Button>
         )}
+        {cita.estado === "confirmada" && (
+          <Button
+            variant="secondary"
+            block
+            disabled={savingEstado}
+            onClick={() => updateStatus("no_asistio", "Marcada como no asistida")}
+          >
+            El cliente no asistió
+          </Button>
+        )}
         {(cita.estado === "pendiente" || cita.estado === "confirmada") && (
           <Button variant="danger" block disabled={savingEstado} onClick={() => updateStatus("cancelada", "Cita cancelada")}>
             Cancelar cita
           </Button>
         )}
-        {cita.estado === "cancelada" && (
+        {(cita.estado === "cancelada" || cita.estado === "no_asistio") && (
           <Button variant="secondary" block disabled={savingEstado} onClick={() => updateStatus("pendiente", "Cita reactivada")}>
             Reactivar cita
           </Button>

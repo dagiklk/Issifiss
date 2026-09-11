@@ -5,6 +5,7 @@ const CITA_STATES = {
   pendiente: { label: "Pendiente", cls: "bg-amber-50 text-amber-600" },
   cancelada: { label: "Cancelada", cls: "bg-rose-50 text-rose-600" },
   completada: { label: "Completada", cls: "bg-canvas-sunken text-ink-muted" },
+  no_asistio: { label: "No asistió", cls: "bg-rose-100 text-rose-700" },
   disponible: { label: "Disponible", cls: "bg-sage-50 text-sage-700" },
 };
 

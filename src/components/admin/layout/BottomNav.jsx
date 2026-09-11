@@ -2,7 +2,7 @@ import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { CalendarDays, Home, ListChecks, MoreHorizontal, Settings, LogOut, X, Users } from "lucide-react";
+import { CalendarDays, Euro, Home, ListChecks, MoreHorizontal, Settings, LogOut, X, Users } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext.jsx";
 
 const NAV_ID = "bottom-nav-pill";
@@ -104,6 +104,16 @@ export default function BottomNav() {
               >
                 <Users size={19} strokeWidth={1.8} className="text-ink-muted" />
                 Pacientes
+              </button>
+              <button
+                onClick={() => {
+                  setMoreOpen(false);
+                  navigate("/admin/ingresos");
+                }}
+                className="flex w-full items-center gap-3 rounded-xl px-3 py-3 text-left text-[15px] font-medium text-ink transition-colors active:bg-canvas-sunken"
+              >
+                <Euro size={19} strokeWidth={1.8} className="text-ink-muted" />
+                Ingresos
               </button>
               <div className="my-2 h-px bg-line" />
               <button

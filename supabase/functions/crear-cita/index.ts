@@ -168,7 +168,7 @@ serve(async (req: Request) => {
     // ---- 1. Obtener el servicio para conocer su duración ----
     const { data: servicio, error: servicioError } = await supabaseAdmin
       .from("servicios")
-      .select("id, nombre, duracion_minutos, activo")
+      .select("id, nombre, duracion_minutos, precio, activo")
       .eq("id", payload.servicio_id)
       .single();
 
@@ -349,6 +349,7 @@ serve(async (req: Request) => {
         fecha_hora_inicio: inicio.toISOString(),
         fecha_hora_fin: fin.toISOString(),
         estado: "pendiente",
+        precio: servicio.precio,
         notas: payload.notas ?? null,
       })
       .select("id, token_cancelacion, fecha_hora_inicio, fecha_hora_fin, estado")

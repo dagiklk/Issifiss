@@ -198,6 +198,7 @@ export function AppointmentsProvider({ children }) {
           fecha_hora_inicio: inicio.toISOString(),
           fecha_hora_fin: fin.toISOString(),
           estado: "confirmada",
+          precio: servicio.precio,
           notas: notas || null,
         })
         .select(CITA_SELECT)

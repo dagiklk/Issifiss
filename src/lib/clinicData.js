@@ -74,6 +74,9 @@ export function toUiCita(row) {
     horaFin: hhmm(fin),
     duracionMin: Math.round((fin.getTime() - inicio.getTime()) / 60000),
     estado: row.estado,
+    // Precio cobrado en el momento de la reserva — no el precio actual del
+    // servicio, que puede haber cambiado desde entonces (ver toUiServicio).
+    precio: row.precio ?? row.servicios?.precio ?? null,
     notas: row.notas || "",
     tokenCancelacion: row.token_cancelacion,
     creadoEn: row.creado_en,

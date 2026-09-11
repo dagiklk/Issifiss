@@ -1,7 +1,7 @@
 import { NavLink } from "react-router-dom";
 import { motion } from "motion/react";
 import clsx from "clsx";
-import { CalendarDays, Home, ListChecks, LogOut, Settings, Users } from "lucide-react";
+import { CalendarDays, Euro, Home, ListChecks, LogOut, Settings, Users } from "lucide-react";
 import { useAuth } from "../../../context/AuthContext.jsx";
 import { displayNameFromSession } from "../../../utils/dateHelpers.js";
 import Avatar from "../ui/Avatar.jsx";
@@ -11,6 +11,7 @@ const LINKS = [
   { to: "/admin/agenda", label: "Agenda", icon: CalendarDays },
   { to: "/admin/citas", label: "Citas", icon: ListChecks },
   { to: "/admin/pacientes", label: "Pacientes", icon: Users },
+  { to: "/admin/ingresos", label: "Ingresos", icon: Euro },
   { to: "/admin/ajustes", label: "Ajustes", icon: Settings },
 ];
 

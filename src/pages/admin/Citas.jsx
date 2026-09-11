@@ -19,6 +19,7 @@ const ESTADOS = [
   { value: "confirmada", label: "Confirmadas" },
   { value: "pendiente", label: "Pendientes" },
   { value: "completada", label: "Completadas" },
+  { value: "no_asistio", label: "No asistió" },
   { value: "cancelada", label: "Canceladas" },
 ];
 

@@ -10,6 +10,7 @@ import NuevaCita from "./pages/admin/NuevaCita.jsx";
 import Pacientes from "./pages/admin/Pacientes.jsx";
 import PacienteDetalle from "./pages/admin/PacienteDetalle.jsx";
 import Ajustes from "./pages/admin/Ajustes.jsx";
+import Ingresos from "./pages/admin/Ingresos.jsx";
 import ClienteLogin from "./pages/cliente/Login.jsx";
 import ClienteRegistro from "./pages/cliente/Registro.jsx";
 import MiCuenta from "./pages/cliente/MiCuenta.jsx";
@@ -55,6 +56,7 @@ export default function App() {
         <Route path="/admin/pacientes" element={<Pacientes />} />
         <Route path="/admin/pacientes/:id" element={<PacienteDetalle />} />
         <Route path="/admin/ajustes" element={<Ajustes />} />
+        <Route path="/admin/ingresos" element={<Ingresos />} />
         {/* Compatibilidad con el enlace anterior del panel */}
         <Route path="/admin/panel" element={<Panel />} />
       </Route>
