@@ -96,6 +96,84 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Quién soy */}
+      <section className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
+        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,280px)_1fr] lg:gap-14">
+          <div className="mx-auto flex w-full max-w-[280px] flex-col gap-3 lg:mx-0">
+            <img
+              src={isaacPerfil}
+              alt="Isaac Rodríguez, fisioterapeuta, con la beca de graduación de la Universidad Francisco de Vitoria"
+              className="aspect-[2/3] w-full rounded-3xl object-cover object-top shadow-raised"
+            />
+            <div className="grid grid-cols-2 gap-3">
+              <img
+                src={diplomaGrado}
+                alt="Diploma del Grado en Fisioterapia por la Universidad Francisco de Vitoria"
+                className="w-full rounded-2xl shadow-softer"
+              />
+              <img
+                src={graduacionMaster}
+                alt="Graduación del Máster en Fisioterapia Invasiva y Ecografía por la Universidad Europea"
+                className="w-full rounded-2xl shadow-softer"
+              />
+            </div>
+          </div>
+
+          <div>
+            <span className="inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12.5px] font-medium text-sage-700">
+              Quién soy
+            </span>
+            <h2 className="mb-1.5 mt-4 font-display text-[24px] font-semibold tracking-display text-ink">
+              Isaac Rodríguez
+            </h2>
+            <p className="mb-3 text-[14px] font-medium text-sage-700">Fisioterapeuta</p>
+            <p className="text-[14.5px] leading-relaxed text-ink-muted">
+              Graduado en Fisioterapia por la Universidad Francisco de Vitoria y Máster en
+              Fisioterapia Invasiva y Ecografía por la Universidad Europea. Formación académica y
+              especialización práctica constante para ofrecerte un tratamiento preciso y
+              actualizado.
+            </p>
+
+            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <div>
+                <p className="mb-2.5 flex items-center gap-2 text-[13px] font-semibold text-ink">
+                  <GraduationCap size={16} strokeWidth={1.9} className="text-sage-600" />
+                  Formación académica
+                </p>
+                <ul className="flex flex-col gap-1.5 text-[13.5px] leading-relaxed text-ink-muted">
+                  {FORMACION_ACADEMICA.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+              <div>
+                <p className="mb-2.5 flex items-center gap-2 text-[13px] font-semibold text-ink">
+                  <Award size={16} strokeWidth={1.9} className="text-sage-600" />
+                  Formación complementaria
+                </p>
+                <ul className="flex flex-col gap-1.5 text-[13.5px] leading-relaxed text-ink-muted">
+                  {FORMACION_COMPLEMENTARIA.map((item) => (
+                    <li key={item}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            <div className="mt-6 flex items-start gap-3 rounded-2xl border border-line bg-white p-4 shadow-softer">
+              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
+                <Trophy size={16} strokeWidth={1.9} />
+              </span>
+              <p className="text-[13.5px] leading-relaxed text-ink-muted">
+                Experiencia trabajando con equipos de{" "}
+                <strong className="font-semibold text-ink">fútbol de Primera División Femenina</strong>, así
+                como con boxeadores y atletas de alto rendimiento, en entornos deportivos
+                profesionales y de competición.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Servicios */}
       <section id="servicios" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-14 lg:px-8">
         <h2 className="mb-6 font-display text-[24px] font-semibold tracking-display text-ink">Nuestros servicios</h2>
@@ -147,83 +225,6 @@ export default function Home() {
             <Button as={Link} to="/reservar" variant="accent" className="mt-6">
               Reservar valoración con ecografía
             </Button>
-          </div>
-        </div>
-      </section>
-
-      {/* Formación y experiencia */}
-      <section className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
-        <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-2 lg:gap-14">
-          <div className="order-2 flex flex-col items-center gap-3 lg:order-1">
-            <img
-              src={isaacPerfil}
-              alt="Isaac Rodríguez, fisioterapeuta, con la beca de graduación de la Universidad Francisco de Vitoria"
-              className="w-full max-w-[280px] rounded-3xl shadow-raised"
-            />
-            <div className="grid w-full max-w-[280px] grid-cols-2 gap-3">
-              <img
-                src={diplomaGrado}
-                alt="Diploma del Grado en Fisioterapia por la Universidad Francisco de Vitoria"
-                className="w-full rounded-2xl shadow-softer"
-              />
-              <img
-                src={graduacionMaster}
-                alt="Graduación del Máster en Fisioterapia Invasiva y Ecografía por la Universidad Europea"
-                className="w-full rounded-2xl shadow-softer"
-              />
-            </div>
-          </div>
-
-          <div className="order-1 lg:order-2">
-            <span className="inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12.5px] font-medium text-sage-700">
-              Sobre tu fisioterapeuta
-            </span>
-            <h2 className="mb-3 mt-4 font-display text-[24px] font-semibold tracking-display text-ink">
-              Isaac Rodríguez, fisioterapeuta
-            </h2>
-            <p className="text-[14.5px] leading-relaxed text-ink-muted">
-              Graduado en Fisioterapia por la Universidad Francisco de Vitoria y Máster en
-              Fisioterapia Invasiva y Ecografía por la Universidad Europea. Formación académica y
-              especialización práctica constante para ofrecerte un tratamiento preciso y
-              actualizado.
-            </p>
-
-            <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2">
-              <div>
-                <p className="mb-2.5 flex items-center gap-2 text-[13px] font-semibold text-ink">
-                  <GraduationCap size={16} strokeWidth={1.9} className="text-sage-600" />
-                  Formación académica
-                </p>
-                <ul className="flex flex-col gap-1.5 text-[13.5px] leading-relaxed text-ink-muted">
-                  {FORMACION_ACADEMICA.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-              <div>
-                <p className="mb-2.5 flex items-center gap-2 text-[13px] font-semibold text-ink">
-                  <Award size={16} strokeWidth={1.9} className="text-sage-600" />
-                  Formación complementaria
-                </p>
-                <ul className="flex flex-col gap-1.5 text-[13.5px] leading-relaxed text-ink-muted">
-                  {FORMACION_COMPLEMENTARIA.map((item) => (
-                    <li key={item}>{item}</li>
-                  ))}
-                </ul>
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-start gap-3 rounded-2xl border border-line bg-white p-4 shadow-softer">
-              <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
-                <Trophy size={16} strokeWidth={1.9} />
-              </span>
-              <p className="text-[13.5px] leading-relaxed text-ink-muted">
-                Experiencia trabajando con equipos de{" "}
-                <strong className="font-semibold text-ink">fútbol de Primera División Femenina</strong>, así
-                como con boxeadores y atletas de alto rendimiento, en entornos deportivos
-                profesionales y de competición.
-              </p>
-            </div>
           </div>
         </div>
       </section>
