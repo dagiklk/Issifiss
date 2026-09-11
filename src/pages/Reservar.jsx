@@ -72,7 +72,12 @@ export default function Reservar() {
         nombre: prev.nombre || propio.nombre || "",
         email: prev.email || propio.email || "",
         telefono: prev.telefono || propio.telefono || "",
-        consentimientoRGPD: prev.consentimientoRGPD || true,
+        // No preseleccionamos el consentimiento aunque el cliente ya tenga
+        // cuenta: bajo RGPD el consentimiento debe darse de forma expresa
+        // para cada tratamiento, una casilla premarcada no cuenta como
+        // consentimiento válido. (Antes esto era "prev.consentimientoRGPD ||
+        // true", que la forzaba a true siempre por error.)
+        consentimientoRGPD: prev.consentimientoRGPD || false,
       }));
     });
     return () => {

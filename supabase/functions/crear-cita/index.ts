@@ -132,6 +132,18 @@ async function notificarSolicitudPaciente(datos: {
   });
 }
 
+// Escapa un valor para usarlo dentro de un filtro .or()/.eq() de PostgREST
+// construido a mano. Los caracteres "," "." "(" ")" tienen significado
+// especial en la sintaxis de filtros de PostgREST (separan condiciones), así
+// que un email/teléfono con uno de esos caracteres podría, sin este escape,
+// inyectar condiciones adicionales en el filtro (p. ej. forzar que matchee
+// con cualquier fila en vez de solo con la que tiene ese email exacto).
+// PostgREST soporta values entrecomillados con comillas dobles para evitar
+// justo esto: https://postgrest.org/en/stable/references/api/tables_views.html#reserved-characters
+function valorFiltroSeguro(valor: string): string {
+  return `"${valor.replace(/\\/g, "\\\\").replace(/"/g, '\\"')}"`;
+}
+
 interface CrearCitaPayload {
   servicio_id: string;
   fecha_hora_inicio: string; // ISO 8601, ej: "2026-09-10T10:00:00.000Z"
@@ -233,11 +245,13 @@ serve(async (req: Request) => {
     // matching por email/teléfono pensado para invitados — así no se le crea
     // un paciente duplicado cada vez que reserva.
     let usuarioAutenticadoId: string | null = null;
+    let emailAutenticadoVerificado: string | null = null;
     const token = req.headers.get("Authorization")?.replace(/^Bearer\s+/i, "");
     if (token) {
       const { data: userData, error: userError } = await supabaseAdmin.auth.getUser(token);
       if (!userError && userData?.user) {
         usuarioAutenticadoId = userData.user.id;
+        emailAutenticadoVerificado = userData.user.email ?? null;
       }
     }
 
@@ -255,22 +269,23 @@ serve(async (req: Request) => {
       } else {
         // Puede que ya hubiera reservado como invitado antes de crear su
         // cuenta (o antes de confirmar el email): si hay un paciente sin
-        // cuenta enlazada con el mismo email/teléfono, lo adoptamos en vez
-        // de crear uno nuevo duplicado.
-        const { data: pacienteSinEnlazar } = await supabaseAdmin
-          .from("pacientes")
-          .select("id")
-          .is("user_id", null)
-          .or(
-            [
-              payload.paciente.email ? `email.eq.${payload.paciente.email}` : null,
-              payload.paciente.telefono ? `telefono.eq.${payload.paciente.telefono}` : null,
-            ]
-              .filter(Boolean)
-              .join(",")
-          )
-          .limit(1)
-          .maybeSingle();
+        // cuenta enlazada con ESE MISMO email, lo adoptamos en vez de crear
+        // uno nuevo duplicado. Importante: el email de match tiene que ser
+        // el email YA VERIFICADO de la cuenta autenticada (userData.user.email),
+        // nunca el que venga en payload.paciente.email — si no, cualquiera con
+        // una cuenta podría escribir el email de OTRA persona en el body y
+        // quedar vinculado a su ficha de paciente (con todo su historial de
+        // citas y notas de salud). Tampoco se hace matching por teléfono aquí
+        // por el mismo motivo: ese campo tampoco está verificado.
+        const { data: pacienteSinEnlazar } = emailAutenticadoVerificado
+          ? await supabaseAdmin
+              .from("pacientes")
+              .select("id")
+              .is("user_id", null)
+              .eq("email", emailAutenticadoVerificado)
+              .limit(1)
+              .maybeSingle()
+          : { data: null };
 
         if (pacienteSinEnlazar) {
           const { error: enlazarError } = await supabaseAdmin
@@ -302,13 +317,19 @@ serve(async (req: Request) => {
         }
       }
     } else {
+      // Invitado sin sesión: el email/teléfono del body no está verificado,
+      // así que solo se reutiliza un paciente que sea también de invitado
+      // (user_id null). Sin este filtro, cualquiera podría escribir el
+      // email/teléfono de un cliente YA REGISTRADO y crearle citas falsas
+      // colgadas de su ficha real.
       const { data: existente } = await supabaseAdmin
         .from("pacientes")
         .select("id")
+        .is("user_id", null)
         .or(
           [
-            payload.paciente.email ? `email.eq.${payload.paciente.email}` : null,
-            payload.paciente.telefono ? `telefono.eq.${payload.paciente.telefono}` : null,
+            payload.paciente.email ? `email.eq.${valorFiltroSeguro(payload.paciente.email)}` : null,
+            payload.paciente.telefono ? `telefono.eq.${valorFiltroSeguro(payload.paciente.telefono)}` : null,
           ]
             .filter(Boolean)
             .join(",")

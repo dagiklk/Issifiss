@@ -1,0 +1,656 @@
+<title>Auditoría issifiss</title>
+<style>
+  :root{
+    --bg:#f5f6f8;
+    --surface:#ffffff;
+    --surface-sunken:#eceef2;
+    --ink:#1c222c;
+    --ink-muted:#5b6474;
+    --ink-faint:#8790a0;
+    --line:#dfe2e8;
+    --line-strong:#c7ccd6;
+    --accent:#2f5d62;
+    --accent-soft:#e4edec;
+    --accent-ink:#1d3f43;
+    --critico:#b3271d;
+    --critico-bg:#fbe9e7;
+    --alto:#b5650c;
+    --alto-bg:#fbeee0;
+    --medio:#8a6d0a;
+    --medio-bg:#faf3d9;
+    --bajo:#3f6b4a;
+    --bajo-bg:#e7f0e9;
+    --ok:#1f7a52;
+    --ok-bg:#e2f3ea;
+    --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+    --serif: "Newsreader", Georgia, "Times New Roman", serif;
+    --sans: "IBM Plex Sans", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#12151b;
+      --surface:#191d25;
+      --surface-sunken:#1f242e;
+      --ink:#e7e9ee;
+      --ink-muted:#a4acbb;
+      --ink-faint:#727c8d;
+      --line:#2b313d;
+      --line-strong:#3a4150;
+      --accent:#7fb8ba;
+      --accent-soft:#1c2f30;
+      --accent-ink:#bfe0e0;
+      --critico:#f0897e;
+      --critico-bg:#3a1e1c;
+      --alto:#f0b46e;
+      --alto-bg:#3a2c17;
+      --medio:#e6cd6a;
+      --medio-bg:#332d13;
+      --bajo:#8fc39e;
+      --bajo-bg:#1c2e22;
+      --ok:#7fd1ac;
+      --ok-bg:#152c22;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#12151b;
+    --surface:#191d25;
+    --surface-sunken:#1f242e;
+    --ink:#e7e9ee;
+    --ink-muted:#a4acbb;
+    --ink-faint:#727c8d;
+    --line:#2b313d;
+    --line-strong:#3a4150;
+    --accent:#7fb8ba;
+    --accent-soft:#1c2f30;
+    --accent-ink:#bfe0e0;
+    --critico:#f0897e;
+    --critico-bg:#3a1e1c;
+    --alto:#f0b46e;
+    --alto-bg:#3a2c17;
+    --medio:#e6cd6a;
+    --medio-bg:#332d13;
+    --bajo:#8fc39e;
+    --bajo-bg:#1c2e22;
+    --ok:#7fd1ac;
+    --ok-bg:#152c22;
+  }
+
+  *{box-sizing:border-box;}
+  body{
+    background:var(--bg);
+    color:var(--ink);
+    font-family:var(--sans);
+    padding-inline:20px;
+    padding-block:0 64px;
+  }
+  a{color:var(--accent-ink);}
+  .wrap{max-width:840px;margin:0 auto;}
+
+  header.masthead{
+    padding-block:40px 28px;
+    border-bottom:1px solid var(--line);
+  }
+  .eyebrow{
+    font-family:var(--mono);
+    font-size:11.5px;
+    letter-spacing:.09em;
+    text-transform:uppercase;
+    color:var(--accent-ink);
+    background:var(--accent-soft);
+    display:inline-block;
+    padding:3px 9px;
+    border-radius:100px;
+  }
+  h1{
+    font-family:var(--serif);
+    font-weight:600;
+    font-size:clamp(28px,5vw,40px);
+    line-height:1.12;
+    margin:14px 0 8px;
+    text-wrap:balance;
+    letter-spacing:-0.01em;
+  }
+  .dek{
+    font-size:15.5px;
+    color:var(--ink-muted);
+    max-width:62ch;
+    line-height:1.55;
+  }
+  .meta-row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:20px;
+    margin-top:20px;
+    font-size:12.5px;
+    color:var(--ink-faint);
+    font-family:var(--mono);
+  }
+  .meta-row strong{color:var(--ink-muted);font-weight:600;}
+
+  .stat-grid{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1px;
+    background:var(--line);
+    border:1px solid var(--line);
+    border-radius:12px;
+    overflow:hidden;
+    margin-top:28px;
+  }
+  .stat{
+    background:var(--surface);
+    padding:14px 10px;
+    text-align:center;
+  }
+  .stat .n{
+    font-family:var(--serif);
+    font-size:26px;
+    font-weight:600;
+    font-variant-numeric:tabular-nums;
+  }
+  .stat .l{
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.07em;
+    color:var(--ink-faint);
+    margin-top:2px;
+  }
+  .stat.critico .n{color:var(--critico);}
+  .stat.alto .n{color:var(--alto);}
+  .stat.medio .n{color:var(--medio);}
+  .stat.bajo .n{color:var(--bajo);}
+  .stat.ok .n{color:var(--ok);}
+
+  nav.toc{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:24px 0 0;
+    padding-block:16px 0;
+  }
+  nav.toc a{
+    font-size:12.5px;
+    font-family:var(--mono);
+    text-decoration:none;
+    color:var(--ink-muted);
+    border:1px solid var(--line);
+    padding:5px 10px;
+    border-radius:100px;
+    background:var(--surface);
+  }
+  nav.toc a:hover{border-color:var(--line-strong);color:var(--ink);}
+
+  section{margin-top:44px;}
+  h2{
+    font-family:var(--serif);
+    font-size:22px;
+    font-weight:600;
+    margin:0 0 4px;
+    scroll-margin-top:16px;
+    letter-spacing:-.005em;
+  }
+  h2 .count{
+    font-family:var(--mono);
+    font-size:13px;
+    color:var(--ink-faint);
+    font-weight:400;
+  }
+  .section-note{
+    font-size:13.5px;
+    color:var(--ink-muted);
+    max-width:66ch;
+    line-height:1.55;
+    margin-bottom:18px;
+  }
+
+  .card{
+    background:var(--surface);
+    border:1px solid var(--line);
+    border-left:4px solid var(--line-strong);
+    border-radius:10px;
+    padding:16px 18px;
+    margin-bottom:12px;
+  }
+  .card.critico{border-left-color:var(--critico);}
+  .card.alto{border-left-color:var(--alto);}
+  .card.medio{border-left-color:var(--medio);}
+  .card.bajo{border-left-color:var(--bajo);}
+
+  .card-top{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:12px;
+    flex-wrap:wrap;
+  }
+  .card h3{
+    font-family:var(--sans);
+    font-size:15px;
+    font-weight:600;
+    margin:0;
+    line-height:1.4;
+  }
+  .badge{
+    font-family:var(--mono);
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    padding:3px 8px;
+    border-radius:5px;
+    white-space:nowrap;
+    font-weight:600;
+  }
+  .badge.corregido{background:var(--ok-bg);color:var(--ok);}
+  .badge.pendiente{background:var(--surface-sunken);color:var(--ink-muted);}
+  .badge.desplegado{background:var(--ok-bg);color:var(--ok);}
+  .badge.decidido{background:var(--accent-soft);color:var(--accent-ink);}
+
+  .loc{
+    font-family:var(--mono);
+    font-size:12px;
+    color:var(--ink-faint);
+    margin-top:3px;
+  }
+  .card p{
+    font-size:13.5px;
+    line-height:1.6;
+    color:var(--ink-muted);
+    margin:10px 0 0;
+  }
+  .card p.scenario{
+    background:var(--surface-sunken);
+    border-radius:7px;
+    padding:9px 11px;
+    margin-top:10px;
+    color:var(--ink);
+    font-size:13px;
+  }
+  .card p.scenario b{color:var(--ink-muted);font-weight:600;}
+  code{
+    font-family:var(--mono);
+    font-size:.92em;
+    background:var(--surface-sunken);
+    padding:1px 5px;
+    border-radius:4px;
+  }
+
+  .clean-list{
+    background:var(--ok-bg);
+    border:1px solid color-mix(in srgb, var(--ok) 35%, transparent);
+    border-radius:10px;
+    padding:16px 18px;
+  }
+  .clean-list li{color:var(--ink);font-size:13.5px;line-height:1.7;}
+  .clean-list li::marker{color:var(--ok);}
+
+  .flow{
+    display:flex;
+    flex-wrap:wrap;
+    align-items:center;
+    gap:8px;
+    font-family:var(--mono);
+    font-size:12px;
+    margin:14px 0;
+  }
+  .flow .node{
+    border:1px solid var(--line-strong);
+    background:var(--surface);
+    padding:7px 11px;
+    border-radius:7px;
+    color:var(--ink);
+  }
+  .flow .arrow{color:var(--ink-faint);}
+
+  table{
+    width:100%;
+    border-collapse:collapse;
+    font-size:13px;
+    margin-top:10px;
+  }
+  th,td{
+    text-align:left;
+    padding:8px 10px;
+    border-bottom:1px solid var(--line);
+  }
+  th{
+    font-size:10.5px;
+    text-transform:uppercase;
+    letter-spacing:.06em;
+    color:var(--ink-faint);
+    font-weight:600;
+  }
+  td{color:var(--ink-muted);}
+  td.n{color:var(--ink);font-family:var(--mono);}
+  .tbl-wrap{overflow-x:auto;}
+
+  footer{
+    margin-top:56px;
+    padding-top:20px;
+    border-top:1px solid var(--line);
+    font-size:12px;
+    color:var(--ink-faint);
+    line-height:1.7;
+  }
+
+  @media (max-width:600px){
+    .stat-grid{grid-template-columns:repeat(3,1fr);}
+    .stat:nth-child(4),.stat:nth-child(5){display:none;}
+  }
+</style>
+
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600;6..72,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<div class="wrap">
+
+  <header class="masthead">
+    <span class="eyebrow">Auditoría técnica</span>
+    <h1>issifiss — plataforma de reservas de fisioterapia</h1>
+    <p class="dek">Revisión de extremo a extremo del repositorio: modelo de datos y RLS en Supabase, Edge Functions, frontend React, dependencias y configuración de producción. Objetivo: seguridad, lógica de negocio, rendimiento y mantenibilidad.</p>
+    <div class="meta-row">
+      <span><strong>Alcance:</strong> repo completo + proyecto Supabase en vivo (issifiss, eu-central-1)</span>
+      <span><strong>Stack:</strong> React 18 + Vite · Supabase (Postgres, Auth, Realtime, Edge Functions) · Tailwind</span>
+      <span><strong>Fecha:</strong> 2026-09-11</span>
+    </div>
+
+    <div class="stat-grid">
+      <div class="stat critico"><div class="n">3</div><div class="l">Crítico</div></div>
+      <div class="stat alto"><div class="n">4</div><div class="l">Alto</div></div>
+      <div class="stat medio"><div class="n">9</div><div class="l">Medio</div></div>
+      <div class="stat bajo"><div class="n">9</div><div class="l">Bajo</div></div>
+      <div class="stat ok"><div class="n">5</div><div class="l">Corregidos hoy</div></div>
+    </div>
+
+    <nav class="toc">
+      <a href="#resumen">Resumen</a>
+      <a href="#arquitectura">Arquitectura y modelo de acceso</a>
+      <a href="#critico">Crítico</a>
+      <a href="#alto">Alto</a>
+      <a href="#medio">Medio</a>
+      <a href="#bajo">Bajo</a>
+      <a href="#limpio">Qué no se encontró</a>
+      <a href="#pendientes">Decisiones del cliente</a>
+    </nav>
+  </header>
+
+  <section id="resumen">
+    <h2>Resumen ejecutivo</h2>
+    <p class="section-note">
+      El diseño de acceso de fondo es sólido: RLS bien pensado, escrituras públicas sensibles aisladas en Edge Functions con Service Role Key, y una comprobación <code>is_admin()</code> verificada en base de datos (no solo en el frontend). Sobre esa base sólida, la revisión encontró <strong>tres fallos críticos concretos</strong> en la función <code>crear-cita</code> — los tres del mismo origen: se confiaba en datos enviados por el cliente (email/teléfono del body) para decidir a qué paciente vincular una reserva o una cuenta, en vez de verificar esos datos contra la sesión autenticada. El más grave permitía a cualquier persona con una cuenta de cliente apropiarse del historial médico de otro paciente solo sabiendo su email.
+    </p>
+    <p class="section-note">
+      Los tres críticos y dos de los cuatro altos ya están <strong>corregidos, verificados con <code>npm run build</code> y desplegados en producción</strong> (Edge Function <code>crear-cita</code>, versión 7, confirmada con una petición de prueba real). Los otros dos ALTO (visibilidad de las notas clínicas y el upgrade de react-router) se dejaron sobre la mesa para el cliente y ya tienen decisión tomada — ver <a href="#pendientes">Decisiones del cliente</a>. El resto de hallazgos, de medio y bajo impacto, se documentan con su recomendación pero no se tocaron por no ser cambios triviales de aplicar sin más contexto.
+    </p>
+  </section>
+
+  <section id="arquitectura">
+    <h2>Arquitectura y modelo de acceso</h2>
+    <p class="section-note">Cómo circulan los datos, resumido:</p>
+    <div class="flow">
+      <span class="node">Visitante / cliente (React)</span>
+      <span class="arrow">→</span>
+      <span class="node">anon key + RLS</span>
+      <span class="arrow">→</span>
+      <span class="node">Postgres (Supabase)</span>
+    </div>
+    <div class="flow">
+      <span class="node">Reserva / cancelación pública</span>
+      <span class="arrow">→</span>
+      <span class="node">Edge Function (Service Role Key)</span>
+      <span class="arrow">→</span>
+      <span class="node">Postgres</span>
+      <span class="arrow">→</span>
+      <span class="node">Resend (email)</span>
+    </div>
+    <p class="section-note">
+      <strong>Tres niveles de acceso</strong>, aplicados en base de datos (no en el frontend): visitante anónimo (solo lee <code>servicios</code>/<code>disponibilidad</code> activos y una vista sin PII con los huecos ocupados); cliente con cuenta (<code>user_id = auth.uid()</code> le limita a su propia fila en <code>pacientes</code> y a sus propias <code>citas</code>); fisio/administrador (tabla <code>admins</code> como lista blanca, comprobada con la función <code>is_admin()</code>). <code>pacientes</code> y <code>citas</code> no tienen ninguna política para <code>anon</code> a propósito — toda escritura pública pasa por una Edge Function que valida en el servidor.
+    </p>
+  </section>
+
+  <section id="critico">
+    <h2>Crítico <span class="count">— 3 hallazgos, los 3 corregidos y desplegados</span></h2>
+    <p class="section-note">Los tres viven en <code>supabase/functions/crear-cita/index.ts</code> y comparten la misma causa raíz: confiar en el <code>email</code>/<code>telefono</code> que el cliente escribe en el body de la petición para decidir identidad, en vez del email verificado de la sesión.</p>
+
+    <div class="card critico">
+      <div class="card-top">
+        <h3>Secuestro de ficha de paciente vía email no verificado</h3>
+        <span class="badge corregido">Corregido · desplegado</span>
+      </div>
+      <div class="loc">supabase/functions/crear-cita/index.ts:256-273 (antes del fix)</div>
+      <p>Al reservar con una cuenta de cliente recién creada, el código buscaba un paciente de invitado ya existente por <code>payload.paciente.email</code> / <code>payload.paciente.telefono</code> —valores que el propio atacante escribe en el body— y, si encontraba coincidencia, vinculaba esa ficha a la cuenta del atacante (<code>user_id = usuarioAutenticadoId</code>).</p>
+      <p class="scenario"><b>Escenario:</b> cualquiera se registra como cliente, reserva escribiendo el email de otra persona que ya reservó como invitado antes, y su cuenta queda enlazada permanentemente a esa ficha — ganando acceso de lectura a todo su historial de citas y datos de salud vía <code>pacientes_propio_select</code>/<code>citas_propias_select</code> (RLS), sin que la víctima lo note.</p>
+      <p><b>Fix:</b> el matching ahora usa <code>userData.user.email</code> —el email ya verificado por Supabase Auth de quien hace la llamada—, nunca el del body.</p>
+    </div>
+
+    <div class="card critico">
+      <div class="card-top">
+        <h3>Citas falsas colgadas de la ficha de un cliente real</h3>
+        <span class="badge corregido">Corregido · desplegado</span>
+      </div>
+      <div class="loc">supabase/functions/crear-cita/index.ts:305-317 (antes del fix)</div>
+      <p>En el flujo de invitado (sin sesión), la búsqueda de paciente existente por email/teléfono no excluía las fichas ya vinculadas a una cuenta (<code>user_id</code> no nulo).</p>
+      <p class="scenario"><b>Escenario:</b> un visitante anónimo escribe el email de un cliente ya registrado y le crea citas arbitrarias (con notas de texto libre) colgadas de su ficha real — sin necesitar contraseña ni sesión. No expone datos directamente, pero contamina el historial clínico de un paciente real y puede usarse para acoso o para ocupar/bloquear huecos de agenda a su nombre.</p>
+      <p><b>Fix:</b> se añadió <code>.is("user_id", null)</code> a esa búsqueda — un invitado solo puede reutilizar otra ficha de invitado, nunca una ya reclamada por una cuenta.</p>
+    </div>
+
+    <div class="card critico">
+      <div class="card-top">
+        <h3>Inyección de filtros PostgREST sin escapar</h3>
+        <span class="badge corregido">Corregido · desplegado</span>
+      </div>
+      <div class="loc">supabase/functions/crear-cita/index.ts:325-338</div>
+      <p>El email/teléfono del body se interpolaba sin escapar dentro de un filtro <code>.or("email.eq.…,telefono.eq.…")</code> construido a mano. Las comas y paréntesis tienen significado especial en la sintaxis de filtros de PostgREST.</p>
+      <p class="scenario"><b>Escenario:</b> un email con una coma cuidadosamente colocada (p. ej. <code>a@a.com,id.eq.&lt;uuid-objetivo&gt;</code>) inyecta una condición <code>OR</code> adicional, permitiendo dirigirse a una fila concreta por su id en vez de por el email real — una capa extra sobre el fallo anterior.</p>
+      <p><b>Fix:</b> los valores ahora se escapan y entrecomillan con una función <code>valorFiltroSeguro()</code> antes de interpolarse, siguiendo el mecanismo de escape que soporta PostgREST.</p>
+    </div>
+  </section>
+
+  <section id="alto">
+    <h2>Alto <span class="count">— 4 hallazgos, 2 corregidos</span></h2>
+
+    <div class="card alto">
+      <div class="card-top">
+        <h3>Casilla de consentimiento RGPD premarcada para clientes recurrentes</h3>
+        <span class="badge corregido">Corregido</span>
+      </div>
+      <div class="loc">src/pages/Reservar.jsx:75 (antes del fix)</div>
+      <p>El precargado de datos para un cliente logueado hacía <code>consentimientoRGPD: prev.consentimientoRGPD || true</code> — como <code>x || true</code> es siempre <code>true</code>, la casilla de consentimiento de tratamiento de datos de salud quedaba marcada sin que el usuario la tocara, en cada reserva nueva.</p>
+      <p class="scenario"><b>Escenario:</b> un cliente que vuelve a reservar nunca ve la casilla desmarcada — no hay consentimiento activo real para esa reserva concreta, lo cual no es válido como consentimiento bajo RGPD para datos de categoría especial (salud).</p>
+      <p><b>Fix:</b> se quitó el <code>|| true</code>; la casilla ya no se premarca.</p>
+    </div>
+
+    <div class="card alto">
+      <div class="card-top">
+        <h3>Cambio de contraseña sin reautenticación</h3>
+        <span class="badge corregido">Corregido</span>
+      </div>
+      <div class="loc">src/pages/cliente/MiCuenta.jsx (cambiarPassword)</div>
+      <p>Cualquier sesión abierta podía cambiar la contraseña de la cuenta sin volver a demostrar que conocía la contraseña actual.</p>
+      <p class="scenario"><b>Escenario:</b> sesión olvidada en un ordenador compartido, o robada de cualquier otra forma — el atacante cambia la contraseña y se queda con la cuenta de forma permanente, sin que el dueño real reciba ningún aviso previo.</p>
+      <p><b>Fix:</b> se añadió un campo "Contraseña actual" que se verifica con <code>signInWithPassword()</code> antes de permitir <code>updatePassword()</code>.</p>
+    </div>
+
+    <div class="card alto">
+      <div class="card-top">
+        <h3>Notas clínicas del fisio legibles por el propio paciente</h3>
+        <span class="badge decidido">Decisión: se deja como está</span>
+      </div>
+      <div class="loc">supabase/schema_cuentas_clientes.sql (pacientes_propio_select) · src/lib/clientePaciente.js:11</div>
+      <p>La política RLS que deja a un cliente leer su propia fila de <code>pacientes</code> no distingue columnas: incluye <code>notas_generales</code>, el campo donde el fisio escribe observaciones clínicas sobre el paciente (<code>src/pages/admin/PacienteDetalle.jsx</code>). <code>obtenerPacientePropio()</code> ya trae ese campo al navegador del cliente con <code>select("*")</code>.</p>
+      <p class="scenario"><b>Escenario:</b> aunque la pantalla "Mi cuenta" no muestra ese campo en la interfaz, cualquier paciente con conocimientos básicos puede leerlo directamente vía la API de Supabase con su propia sesión.</p>
+      <p><b>Decisión confirmada por el cliente (2026-09-11):</b> es intencional que las notas sean visibles para todos los pacientes sobre su propia ficha — no se cambia el esquema ni el RLS.</p>
+    </div>
+
+    <div class="card alto">
+      <div class="card-top">
+        <h3>Dependencias con vulnerabilidades conocidas</h3>
+        <span class="badge decidido">Decisión: se pospone</span>
+      </div>
+      <div class="loc">package.json — react-router-dom ^6.26.2, vite ^5.4.8</div>
+      <div class="tbl-wrap">
+      <table>
+        <tr><th>Paquete</th><th>Aviso</th><th>Severidad</th></tr>
+        <tr><td class="n">react-router(-dom)</td><td>Open redirect vía backslash en Link/useNavigate; inyección de constructor en deserializeErrors() SSR</td><td>Moderada</td></tr>
+        <tr><td class="n">esbuild (vía vite)</td><td>El servidor de desarrollo acepta peticiones y expone respuestas a cualquier web</td><td>Moderada, solo <code>npm run dev</code></td></tr>
+      </table>
+      </div>
+      <p><b>No se aplicó automáticamente</b> porque <code>npm audit fix --force</code> propone react-router-dom 7.x y vite 8.x — mayores con cambios de ruptura que no se pueden validar de forma segura sin probar la app entera.</p>
+      <p><b>Decisión confirmada por el cliente (2026-09-11):</b> se pospone para otro momento, como upgrade planificado con su propia tanda de pruebas.</p>
+    </div>
+  </section>
+
+  <section id="medio">
+    <h2>Medio <span class="count">— 9 hallazgos</span></h2>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Panel de admin carga y refresca las tablas enteras sin paginar</h3></div>
+      <div class="loc">src/context/AppointmentsContext.jsx:23-85</div>
+      <p class="scenario">Cada mount trae <em>todas</em> las filas de <code>citas</code> y <code>pacientes</code> (sin rango de fechas ni límite), y cualquier <code>INSERT/UPDATE</code> vía Realtime en cualquier pestaña dispara un refetch completo de la tabla entera en todas las pestañas abiertas. Con una clínica de varios años de histórico, cada cambio de estado de una cita se vuelve más lento y retransmite datos de salud innecesariamente.</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Guardado de horario sin transacción</h3></div>
+      <div class="loc">src/context/AppointmentsContext.jsx:155-175 (guardarFranjasDia)</div>
+      <p class="scenario">Borra todas las franjas del día y luego inserta las nuevas, sin envolver ambas operaciones. Si el insert falla tras el delete (red, constraint), ese día queda sin ninguna franja — la clínica aparece "cerrada" ese día para reservas públicas hasta que alguien lo note.</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Fallo de registro silencioso da un mensaje erróneo al usuario</h3></div>
+      <div class="loc">src/pages/Reservar.jsx:98-112, 277-283</div>
+      <p class="scenario">Si <code>signUp()</code> falla (p. ej. email ya registrado) al reservar creando cuenta, el error solo se hace <code>console.error</code>. La pantalla de confirmación decide su mensaje mirando si se escribió una contraseña, no si el signUp tuvo éxito — así que a un cliente que ya tenía cuenta se le dice "ya has iniciado sesión" sin ser cierto, y luego no encuentra su cita en "Mi cuenta".</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Sin límite de peticiones en la reserva pública</h3></div>
+      <div class="loc">supabase/functions/crear-cita/index.ts</div>
+      <p class="scenario">El endpoint público no tiene rate limiting ni captcha propios (más allá de lo que ofrezca la capa de Supabase por defecto). Un script podría intentar reservar o rellenar el calendario en bucle para saturar la agenda o forzar el envío masivo de emails vía Resend.</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Sin code-splitting por ruta — el visitante público descarga el panel de admin entero</h3></div>
+      <div class="loc">src/App.jsx (todos los imports son estáticos) · build: 804 KB JS / 347 KB CSS sin comprimir</div>
+      <p class="scenario">Ninguna ruta usa <code>React.lazy</code>: quien solo visita <code>/</code> descarga también todo el código de <code>/admin/*</code>. Además <code>bootstrap/dist/css/bootstrap.min.css</code> se importa entero en <code>main.jsx</code> aunque el proyecto usa Tailwind — solo se usan los iconos (<code>bi-*</code>) en 3 archivos, así que la mayor parte de ese CSS es peso muerto. Vite ya avisa de esto en cada build ("chunks larger than 500 kB").</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Páginas públicas sin metadatos SEO</h3></div>
+      <div class="loc">index.html</div>
+      <p class="scenario">Solo hay <code>&lt;title&gt;</code>; no hay meta description, Open Graph, canonical, <code>robots.txt</code> ni sitemap. Para una landing pensada para captar pacientes por búsqueda ("fisioterapia + ciudad"), esto deja rendimiento SEO sobre la mesa.</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Protección de contraseñas filtradas desactivada en Supabase Auth</h3></div>
+      <div class="loc">Configuración del proyecto — Authentication → Policies</div>
+      <p class="scenario">El advisor de seguridad de Supabase confirma que la comprobación contra HaveIBeenPwned está desactivada: un cliente puede registrarse con una contraseña ya filtrada en brechas conocidas. Se activa con un interruptor en el dashboard, sin cambios de código.</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>Extensión btree_gist instalada en el schema public</h3></div>
+      <div class="loc">supabase/schema.sql — create extension "btree_gist"</div>
+      <p class="scenario">Buena práctica de Postgres: instalarla en un schema dedicado (p. ej. <code>extensions</code>) en vez de <code>public</code>, para no mezclar objetos de extensión con las tablas de la aplicación. Bajo riesgo real, señalado por el linter de Supabase.</p>
+    </div>
+
+    <div class="card medio">
+      <div class="card-top"><h3>CORS abierto a cualquier origen en las Edge Functions</h3></div>
+      <div class="loc">supabase/functions/_shared/resend.ts:39</div>
+      <p class="scenario"><code>Access-Control-Allow-Origin: "*"</code>. El propio comentario del código ya lo marca como pendiente ("en producción, restringe a tu dominio real"). Riesgo real limitado porque el diseño no depende de cookies de sesión ambientales (usa bearer tokens explícitos), pero sigue siendo buena práctica restringirlo al dominio de producción antes de lanzar.</p>
+    </div>
+
+  </section>
+
+  <section id="bajo">
+    <h2>Bajo <span class="count">— 9 hallazgos</span></h2>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Condición de carrera al cambiar de día en el selector de horario</h3></div>
+      <div class="loc">src/components/SelectorHorario.jsx:36-81</div>
+      <p class="scenario">Sin <code>AbortController</code> ni bandera de "sigue activo": clicar varios días rápido puede pintar los huecos del día equivocado si una respuesta antigua llega tarde. No permite doble reserva (la constraint de Postgres protege eso), solo confunde visualmente.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Fichas de paciente huérfanas si falla la inserción de la cita</h3></div>
+      <div class="loc">src/context/AppointmentsContext.jsx:177-216 (crearCita)</div>
+      <p class="scenario">Al agendar desde el panel con un paciente nuevo, si el paciente se crea pero la cita falla después (p. ej. solapamiento), la ficha del paciente queda sin ninguna cita y sin forma de limpiarla desde la interfaz.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Fallo del email de confirmación sin aviso en el panel</h3></div>
+      <div class="loc">src/context/AppointmentsContext.jsx:136</div>
+      <p class="scenario">Si el envío del email al confirmar una cita falla, solo se hace <code>console.error</code>; el fisio no tiene ninguna señal en la interfaz de que el paciente nunca recibió el aviso.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Precio 0 se trata igual que "sin precio configurado"</h3></div>
+      <div class="loc">src/pages/admin/NuevaCita.jsx:217, 253</div>
+      <p class="scenario"><code>s.precio ? … : ""</code> — un servicio gratuito legítimo (precio 0) oculta la línea de precio en vez de mostrar "0 €".</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Formularios sin asociar label/input</h3></div>
+      <div class="loc">Todos los formularios del proyecto (Login, Registro, MiCuenta, FormularioPaciente, NuevaCita, editores de Ajustes…)</div>
+      <p class="scenario">Ningún <code>&lt;label&gt;</code> usa <code>htmlFor</code>/<code>id</code> — la asociación es solo visual. Un lector de pantalla no puede anunciar de forma fiable el propósito del campo al recibir el foco.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Estado de cita comunicado solo por color en la vista compacta</h3></div>
+      <div class="loc">src/components/admin/appointments/AppointmentCard.jsx:46-52</div>
+      <p class="scenario">En el modo compacto (usado en "Actividad reciente" del Panel), el estado es un punto de color sin texto ni <code>aria-label</code> — indistinguible para daltónicos o lectores de pantalla. La variante no compacta sí incluye texto.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>ClientProtectedRoute espera una comprobación is_admin() que no necesita</h3></div>
+      <div class="loc">src/context/AuthContext.jsx:74-78 · src/routes/ClientProtectedRoute.jsx:5</div>
+      <p class="scenario"><code>loading</code> combina sesión + <code>checkingAdmin</code> para todos los consumidores, así que una ruta solo de cliente espera un viaje de red a <code>is_admin()</code> que le es irrelevante — latencia evitable en cada carga de <code>/cuenta</code>.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Efecto sin guarda de desmontaje en Cancelar.jsx</h3></div>
+      <div class="loc">src/pages/Cancelar.jsx:26-52</div>
+      <p class="scenario">Navegar fuera de la página mientras la búsqueda del token está en vuelo produce el aviso inofensivo de React "set state en un componente desmontado" — no es una fuga real, solo ruido en consola.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Funciones SECURITY DEFINER ejecutables por el rol anon</h3></div>
+      <div class="loc">supabase/schema_cuentas_clientes.sql (is_admin) · schema_vincular_paciente_existente.sql (claim_paciente_by_email)</div>
+      <p class="scenario">Postgres concede EXECUTE a <code>PUBLIC</code> por defecto al crear una función; ninguna de las dos lo revoca explícitamente. No es explotable hoy —ambas dependen de <code>auth.uid()</code>, que es <code>null</code> para peticiones anónimas reales—, pero <code>revoke execute … from public</code> es la higiene recomendada para no depender de esa suposición.</p>
+    </div>
+
+    <div class="card bajo">
+      <div class="card-top"><h3>Validación de precio/duración solo en el frontend</h3></div>
+      <div class="loc">src/components/admin/settings/ServiciosEditor.jsx:49-54</div>
+      <p class="scenario">No se encontró un <code>CHECK</code> equivalente en <code>servicios</code> para precio ≥ 0 (sí existe para <code>duracion_minutos &gt; 0</code>). Impacto bajo porque solo lo puede tocar un admin ya autenticado, pero vale la pena blindarlo en el esquema.</p>
+    </div>
+  </section>
+
+  <section id="limpio">
+    <h2>Qué se revisó y no dio problema</h2>
+    <ul class="clean-list">
+      <li>Sin <code>dangerouslySetInnerHTML</code>, <code>innerHTML</code> ni <code>eval</code> en todo <code>src/</code> — no se encontró ninguna vía de XSS.</li>
+      <li>La <code>service_role</code> key nunca aparece en el frontend ni en el bundle de producción — solo la <code>anon</code> key pública (rol <code>anon</code>, confirmado decodificando el JWT), tal como debe ser.</li>
+      <li><code>.env</code> no está versionado ni lo ha estado nunca (comprobado en el historial de git); <code>.gitignore</code> lo cubre.</li>
+      <li>Sin sourcemaps expuestos en <code>dist/</code>.</li>
+      <li>Ningún precio se calcula ni se envía desde el cliente — el importe de cada cita se fija en el servidor a partir de <code>servicios.precio</code> en el momento de la reserva.</li>
+      <li><code>AppointmentsProvider</code> vive correctamente dentro de <code>ProtectedRoute</code>/<code>AdminShell</code> — no hay ninguna carga de datos de admin que se adelante a la comprobación de sesión.</li>
+      <li>Todas las acciones de escritura revisadas (reservar, cancelar, cambiar estado, guardar notas, cambiar contraseña, editar servicios/horario) deshabilitan su botón mientras la petición está en vuelo — no se encontró ningún hueco de doble envío.</li>
+      <li>La cancelación por token usa un UUID v4 (122 bits de aleatoriedad) como capability token — fuerza bruta inviable.</li>
+      <li>La consulta de citas propias en "Mi cuenta" está correctamente acotada a <code>paciente_id = propio.id</code> y no trae ningún campo clínico.</li>
+    </ul>
+  </section>
+
+  <section id="pendientes">
+    <h2>Decisiones del cliente</h2>
+    <p class="section-note">Estos dos puntos ALTO se dejaron sin tocar en el momento del informe por implicar una decisión de producto o un cambio con coste de ruptura. El cliente los resolvió el mismo día:</p>
+    <div class="card alto">
+      <div class="card-top"><h3>Notas clínicas visibles para el paciente</h3><span class="badge decidido">Se mantiene así</span></div>
+      <p>Confirmado: es intencional que cada paciente pueda ver las notas clínicas sobre su propia ficha. No se toca el esquema ni el RLS.</p>
+    </div>
+    <div class="card alto">
+      <div class="card-top"><h3>Upgrade de react-router-dom a la v7</h3><span class="badge decidido">Pospuesto</span></div>
+      <p>Confirmado: se deja para otro momento, como upgrade planificado aparte con su propia ronda de pruebas.</p>
+    </div>
+  </section>
+
+  <footer>
+    Informe generado a partir de una lectura completa del repositorio y del proyecto Supabase en vivo (esquema, RLS, Edge Functions desplegadas y advisories). Las correcciones críticas y altas marcadas "corregido" se verificaron con <code>npm run build</code> y, en el caso de la Edge Function, con una petición de prueba real tras el despliegue.
+  </footer>
+
+</div>

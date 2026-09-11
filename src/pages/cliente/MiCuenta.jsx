@@ -51,7 +51,7 @@ export default function MiCuenta() {
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [errorCarga, setErrorCarga] = useState(null);
-  const [passwords, setPasswords] = useState({ nueva: "", confirmar: "" });
+  const [passwords, setPasswords] = useState({ actual: "", nueva: "", confirmar: "" });
   const [errorPassword, setErrorPassword] = useState(null);
   const [cambiandoPassword, setCambiandoPassword] = useState(false);
 
@@ -108,6 +108,10 @@ export default function MiCuenta() {
     e.preventDefault();
     setErrorPassword(null);
 
+    if (!passwords.actual) {
+      setErrorPassword("Introduce tu contraseña actual");
+      return;
+    }
     if (!passwords.nueva || passwords.nueva.length < 6) {
       setErrorPassword("La contraseña debe tener al menos 6 caracteres");
       return;
@@ -119,8 +123,21 @@ export default function MiCuenta() {
 
     setCambiandoPassword(true);
     try {
+      // Reautenticamos con la contraseña actual antes de cambiarla: una
+      // sesión abierta (móvil compartido, sesión olvidada en un ordenador
+      // público...) no debería bastar por sí sola para tomar la cuenta
+      // cambiando la contraseña sin volver a demostrar que la conoces.
+      const { error: reauthError } = await supabase.auth.signInWithPassword({
+        email: user.email,
+        password: passwords.actual,
+      });
+      if (reauthError) {
+        setErrorPassword("La contraseña actual no es correcta");
+        return;
+      }
+
       await updatePassword(passwords.nueva);
-      setPasswords({ nueva: "", confirmar: "" });
+      setPasswords({ actual: "", nueva: "", confirmar: "" });
       toast.success("Contraseña actualizada");
     } catch (err) {
       setErrorPassword(err.message || "No se pudo actualizar la contraseña");
@@ -184,6 +201,15 @@ export default function MiCuenta() {
             <Card className="p-5">
               <p className="mb-4 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">Cambiar contraseña</p>
               <form onSubmit={cambiarPassword} className="flex flex-col gap-4">
+                <div>
+                  <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Contraseña actual</label>
+                  <input
+                    className={inputClass}
+                    type="password"
+                    value={passwords.actual}
+                    onChange={(e) => setPasswords((p) => ({ ...p, actual: e.target.value }))}
+                  />
+                </div>
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Nueva contraseña</label>
