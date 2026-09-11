@@ -99,7 +99,7 @@ export default function Home() {
       {/* Quién soy */}
       <section className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
         <div className="grid grid-cols-1 items-start gap-10 lg:grid-cols-[minmax(0,280px)_1fr] lg:gap-14">
-          <div className="mx-auto flex w-full max-w-[280px] flex-col gap-3 lg:mx-0">
+          <div className="order-2 mx-auto flex w-full max-w-[280px] flex-col gap-3 lg:order-1 lg:mx-0">
             <img
               src={isaacPerfil}
               alt="Isaac Rodríguez, fisioterapeuta, con la beca de graduación de la Universidad Francisco de Vitoria"
@@ -119,7 +119,7 @@ export default function Home() {
             </div>
           </div>
 
-          <div>
+          <div className="order-1 lg:order-2">
             <span className="inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12.5px] font-medium text-sage-700">
               Quién soy
             </span>
