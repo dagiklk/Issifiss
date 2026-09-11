@@ -109,12 +109,12 @@ export default function Home() {
               <img
                 src={diplomaGrado}
                 alt="Diploma del Grado en Fisioterapia por la Universidad Francisco de Vitoria"
-                className="w-full rounded-2xl shadow-softer"
+                className="aspect-square w-full rounded-2xl object-cover object-top shadow-softer"
               />
               <img
                 src={graduacionMaster}
                 alt="Graduación del Máster en Fisioterapia Invasiva y Ecografía por la Universidad Europea"
-                className="w-full rounded-2xl shadow-softer"
+                className="aspect-square w-full rounded-2xl object-cover object-top shadow-softer"
               />
             </div>
           </div>
