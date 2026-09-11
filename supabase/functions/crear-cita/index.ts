@@ -86,9 +86,9 @@ async function notificarNuevaCita(datos: {
 
   await enviarEmail({
     to: [EMAIL_FISIO],
-    subject: `Nueva reserva: ${datos.pacienteNombre} · ${fechaFmt}`,
+    subject: `Nueva solicitud de cita: ${datos.pacienteNombre} · ${fechaFmt}`,
     html: `
-      <h2>Nueva cita reservada</h2>
+      <h2>Nueva solicitud de cita (pendiente de confirmar)</h2>
       <p><strong>Servicio:</strong> ${datos.servicioNombre}</p>
       <p><strong>Fecha:</strong> ${fechaFmt}</p>
       <p><strong>Hora:</strong> ${horaFmt}</p>
@@ -96,12 +96,16 @@ async function notificarNuevaCita(datos: {
       ${datos.pacienteTelefono ? `<p><strong>Teléfono:</strong> ${datos.pacienteTelefono}</p>` : ""}
       ${datos.pacienteEmail ? `<p><strong>Email:</strong> ${datos.pacienteEmail}</p>` : ""}
       ${datos.notas ? `<p><strong>Notas:</strong> ${datos.notas}</p>` : ""}
-      <p>Entra al panel de issifiss para confirmarla.</p>
+      <p>Entra al panel de issifiss para confirmarla. El paciente recibirá un email en cuanto lo hagas.</p>
     `,
   });
 }
 
-async function notificarConfirmacionPaciente(datos: {
+// Al reservar, la cita queda en estado "pendiente" hasta que el fisio la
+// confirme desde el panel — este email es solo el aviso de que la solicitud
+// se ha recibido. El email de confirmación real se envía aparte, desde la
+// Edge Function "notificar-confirmacion", cuando el fisio la confirma.
+async function notificarSolicitudPaciente(datos: {
   pacienteEmail: string;
   pacienteNombre: string;
   servicioNombre: string;
@@ -114,13 +118,14 @@ async function notificarConfirmacionPaciente(datos: {
 
   await enviarEmail({
     to: [datos.pacienteEmail],
-    subject: `Tu cita en issifiss · ${fechaFmt}`,
+    subject: `Hemos recibido tu solicitud de cita en issifiss · ${fechaFmt}`,
     html: `
-      <h2>¡Cita confirmada!</h2>
-      <p>Hola ${datos.pacienteNombre}, tu reserva ha quedado registrada:</p>
+      <h2>¡Solicitud recibida!</h2>
+      <p>Hola ${datos.pacienteNombre}, hemos registrado tu solicitud de cita:</p>
       <p><strong>Servicio:</strong> ${datos.servicioNombre}</p>
       <p><strong>Fecha:</strong> ${fechaFmt}</p>
       <p><strong>Hora:</strong> ${horaFmt}</p>
+      <p>Tu fisio la revisará y te avisaremos por email en cuanto quede confirmada.</p>
       <p>Si necesitas cancelarla, puedes hacerlo desde este enlace:</p>
       <p><a href="${enlaceCancelacion}">${enlaceCancelacion}</a></p>
     `,
@@ -371,7 +376,7 @@ serve(async (req: Request) => {
         notas: payload.notas,
       }),
       payload.paciente.email
-        ? notificarConfirmacionPaciente({
+        ? notificarSolicitudPaciente({
             pacienteEmail: payload.paciente.email,
             pacienteNombre: payload.paciente.nombre,
             servicioNombre,

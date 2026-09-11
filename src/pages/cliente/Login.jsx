@@ -60,7 +60,12 @@ export default function ClienteLogin() {
               />
             </div>
             <div>
-              <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Contraseña</label>
+              <div className="mb-1.5 flex items-center justify-between">
+                <label className="block text-[12.5px] font-medium text-ink-muted">Contraseña</label>
+                <Link to="/cuenta/recuperar" className="text-[12px] font-medium text-sage-700 underline underline-offset-2">
+                  ¿Olvidaste tu contraseña?
+                </Link>
+              </div>
               <input
                 className={inputClass}
                 type="password"

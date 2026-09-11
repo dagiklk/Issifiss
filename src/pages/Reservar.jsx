@@ -259,16 +259,19 @@ export default function Reservar() {
                 <span className="flex h-16 w-16 items-center justify-center rounded-full bg-sage-50 text-sage-600">
                   <CalendarCheck2 size={28} strokeWidth={2} />
                 </span>
-                <h1 className="mt-5 font-display text-[20px] font-semibold tracking-display text-ink">¡Cita reservada!</h1>
+                <h1 className="mt-5 font-display text-[20px] font-semibold tracking-display text-ink">¡Solicitud enviada!</h1>
                 <p className="mt-1.5 text-[14px] text-ink-muted">
                   {servicioSeleccionado.nombre} ·{" "}
                   {fechaSeleccionada.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} ·{" "}
                   {horaSeleccionada}
                 </p>
                 <div className="my-5 h-px w-full bg-line" />
+                <p className="text-[13px] text-ink-faint">
+                  Tu fisio la revisará y te avisaremos por email en cuanto quede confirmada.
+                </p>
                 {datosPaciente.email && (
-                  <p className="text-[13px] text-ink-faint">
-                    Te hemos enviado la confirmación por email con el enlace para cancelar tu cita.
+                  <p className="mt-2 text-[13px] text-ink-faint">
+                    Te hemos enviado un email con el resumen de tu solicitud y el enlace para cancelarla.
                   </p>
                 )}
                 {!clienteLogueado && datosPaciente.password && (

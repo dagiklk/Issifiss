@@ -13,6 +13,8 @@ import Ajustes from "./pages/admin/Ajustes.jsx";
 import ClienteLogin from "./pages/cliente/Login.jsx";
 import ClienteRegistro from "./pages/cliente/Registro.jsx";
 import MiCuenta from "./pages/cliente/MiCuenta.jsx";
+import RecuperarPassword from "./pages/cliente/RecuperarPassword.jsx";
+import RestablecerPassword from "./pages/cliente/RestablecerPassword.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import ClientProtectedRoute from "./routes/ClientProtectedRoute.jsx";
 import AdminShell from "./components/admin/layout/AdminShell.jsx";
@@ -26,6 +28,8 @@ export default function App() {
 
       <Route path="/cuenta/login" element={<ClienteLogin />} />
       <Route path="/cuenta/registro" element={<ClienteRegistro />} />
+      <Route path="/cuenta/recuperar" element={<RecuperarPassword />} />
+      <Route path="/cuenta/restablecer" element={<RestablecerPassword />} />
       <Route
         path="/cuenta"
         element={

@@ -7,6 +7,7 @@ import Avatar from "../../components/admin/ui/Avatar.jsx";
 import Switch from "../../components/admin/ui/Switch.jsx";
 import Button from "../../components/admin/ui/Button.jsx";
 import HorarioEditor from "../../components/admin/settings/HorarioEditor.jsx";
+import ServiciosEditor from "../../components/admin/settings/ServiciosEditor.jsx";
 import { useAuth } from "../../context/AuthContext.jsx";
 import { displayNameFromSession } from "../../utils/dateHelpers.js";
 
@@ -73,6 +74,11 @@ export default function Ajustes() {
         <div>
           <SectionTitle>Horario de la clínica</SectionTitle>
           <HorarioEditor />
+        </div>
+
+        <div>
+          <SectionTitle>Servicios y precios</SectionTitle>
+          <ServiciosEditor />
         </div>
 
         <Button variant="danger" block onClick={logout} className="mb-4">

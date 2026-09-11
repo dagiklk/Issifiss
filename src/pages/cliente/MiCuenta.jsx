@@ -13,6 +13,8 @@ import { obtenerPacientePropio } from "../../lib/clientePaciente.js";
 
 const inputClass =
   "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none";
+const inputDisabledClass =
+  "h-11 w-full rounded-xl border border-line bg-canvas-sunken px-3.5 text-[14px] text-ink-muted";
 
 function CitaRow({ cita, cancelable }) {
   return (
@@ -42,13 +44,16 @@ function CitaRow({ cita, cancelable }) {
 }
 
 export default function MiCuenta() {
-  const { user, logout } = useAuth();
+  const { user, logout, updatePassword } = useAuth();
   const [paciente, setPaciente] = useState(null);
-  const [form, setForm] = useState({ nombre: "", telefono: "", email: "" });
+  const [form, setForm] = useState({ nombre: "", telefono: "" });
   const [citas, setCitas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
   const [errorCarga, setErrorCarga] = useState(null);
+  const [passwords, setPasswords] = useState({ nueva: "", confirmar: "" });
+  const [errorPassword, setErrorPassword] = useState(null);
+  const [cambiandoPassword, setCambiandoPassword] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -57,7 +62,7 @@ export default function MiCuenta() {
         const propio = await obtenerPacientePropio(user);
         if (!active || !propio) return;
         setPaciente(propio);
-        setForm({ nombre: propio.nombre || "", telefono: propio.telefono || "", email: propio.email || "" });
+        setForm({ nombre: propio.nombre || "", telefono: propio.telefono || "" });
 
         const { data } = await supabase
           .from("citas")
@@ -88,7 +93,6 @@ export default function MiCuenta() {
         .update({
           nombre: form.nombre.trim(),
           telefono: form.telefono.trim() || null,
-          email: form.email.trim() || null,
         })
         .eq("id", paciente.id);
       if (error) throw error;
@@ -97,6 +101,31 @@ export default function MiCuenta() {
       toast.error(err.message || "No se pudieron guardar los cambios");
     } finally {
       setGuardando(false);
+    }
+  }
+
+  async function cambiarPassword(e) {
+    e.preventDefault();
+    setErrorPassword(null);
+
+    if (!passwords.nueva || passwords.nueva.length < 6) {
+      setErrorPassword("La contraseña debe tener al menos 6 caracteres");
+      return;
+    }
+    if (passwords.nueva !== passwords.confirmar) {
+      setErrorPassword("Las contraseñas no coinciden");
+      return;
+    }
+
+    setCambiandoPassword(true);
+    try {
+      await updatePassword(passwords.nueva);
+      setPasswords({ nueva: "", confirmar: "" });
+      toast.success("Contraseña actualizada");
+    } catch (err) {
+      setErrorPassword(err.message || "No se pudo actualizar la contraseña");
+    } finally {
+      setCambiandoPassword(false);
     }
   }
 
@@ -133,12 +162,8 @@ export default function MiCuenta() {
                 <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                   <div>
                     <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Email</label>
-                    <input
-                      className={inputClass}
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
-                    />
+                    <input className={inputDisabledClass} type="email" value={user?.email || ""} disabled readOnly />
+                    <p className="mt-1.5 text-[12px] text-ink-faint">El email no se puede cambiar aquí.</p>
                   </div>
                   <div>
                     <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Teléfono</label>
@@ -152,6 +177,37 @@ export default function MiCuenta() {
                 </div>
                 <Button type="submit" variant="secondary" disabled={guardando} className="self-start">
                   {guardando ? "Guardando…" : "Guardar cambios"}
+                </Button>
+              </form>
+            </Card>
+
+            <Card className="p-5">
+              <p className="mb-4 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">Cambiar contraseña</p>
+              <form onSubmit={cambiarPassword} className="flex flex-col gap-4">
+                <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                  <div>
+                    <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Nueva contraseña</label>
+                    <input
+                      className={inputClass}
+                      type="password"
+                      placeholder="Mínimo 6 caracteres"
+                      value={passwords.nueva}
+                      onChange={(e) => setPasswords((p) => ({ ...p, nueva: e.target.value }))}
+                    />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Confirmar contraseña</label>
+                    <input
+                      className={inputClass}
+                      type="password"
+                      value={passwords.confirmar}
+                      onChange={(e) => setPasswords((p) => ({ ...p, confirmar: e.target.value }))}
+                    />
+                  </div>
+                </div>
+                {errorPassword && <p className="text-[12.5px] text-rose-600">{errorPassword}</p>}
+                <Button type="submit" variant="secondary" disabled={cambiandoPassword} className="self-start">
+                  {cambiandoPassword ? "Actualizando…" : "Actualizar contraseña"}
                 </Button>
               </form>
             </Card>

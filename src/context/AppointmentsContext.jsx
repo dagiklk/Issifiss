@@ -10,6 +10,7 @@ import { diaSemanaFromISO, slotsForDia, toUiCita, toUiPaciente, toUiServicio } f
 const AppointmentsContext = createContext(null);
 
 const CITA_SELECT = "*, pacientes(*), servicios(*)";
+const NOTIFICAR_CONFIRMACION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notificar-confirmacion`;
 
 export function AppointmentsProvider({ children }) {
   const [citas, setCitas] = useState([]);
@@ -120,6 +121,20 @@ export function AppointmentsProvider({ children }) {
       if (error) {
         await refreshCitas();
         throw error;
+      }
+
+      // Al confirmar una cita desde el panel, avisamos al paciente por email.
+      // No bloqueamos ni fallamos la actualización de estado si esto falla.
+      if (estado === "confirmada") {
+        const { data } = await supabase.auth.getSession();
+        const accessToken = data.session?.access_token;
+        if (accessToken) {
+          fetch(NOTIFICAR_CONFIRMACION_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", Authorization: `Bearer ${accessToken}` },
+            body: JSON.stringify({ cita_id: citaId }),
+          }).catch((err) => console.error("No se pudo enviar el email de confirmación:", err));
+        }
       }
     },
     [refreshCitas]
