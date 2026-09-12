@@ -2,6 +2,9 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Reservar from "./pages/Reservar.jsx";
 import Cancelar from "./pages/Cancelar.jsx";
+import AvisoLegal from "./pages/legal/AvisoLegal.jsx";
+import Privacidad from "./pages/legal/Privacidad.jsx";
+import Terminos from "./pages/legal/Terminos.jsx";
 import Login from "./pages/admin/Login.jsx";
 import Panel from "./pages/admin/Panel.jsx";
 import Agenda from "./pages/admin/Agenda.jsx";
@@ -26,6 +29,9 @@ export default function App() {
       <Route path="/" element={<Home />} />
       <Route path="/reservar" element={<Reservar />} />
       <Route path="/cancelar" element={<Cancelar />} />
+      <Route path="/aviso-legal" element={<AvisoLegal />} />
+      <Route path="/privacidad" element={<Privacidad />} />
+      <Route path="/terminos" element={<Terminos />} />
 
       <Route path="/cuenta/login" element={<ClienteLogin />} />
       <Route path="/cuenta/registro" element={<ClienteRegistro />} />

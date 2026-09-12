@@ -7,6 +7,12 @@ const VARIANTS = {
   secondary: "bg-white text-ink border border-line-strong hover:bg-canvas-sunken",
   ghost: "bg-transparent text-ink hover:bg-black/[0.04]",
   danger: "bg-white text-rose-600 border border-rose-100 hover:bg-rose-50",
+  // Botón claro para usar sobre fondos de color (p. ej. la tarjeta sage-700
+  // de la llamada final a la acción). Variante propia en vez de sobreescribir
+  // bg-*/text-* por className: con `important: true` dos utilidades Tailwind
+  // sobre la misma propiedad tienen un ganador indefinido según el orden de
+  // generación del CSS, no el orden en el JSX.
+  invert: "bg-white text-sage-700 hover:bg-sage-50 active:bg-sage-50",
 };
 
 const SIZES = {

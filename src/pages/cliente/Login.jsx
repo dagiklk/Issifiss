@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import Navbar from "../../components/Navbar.jsx";
 import Footer from "../../components/Footer.jsx";
@@ -10,12 +10,21 @@ const inputClass =
   "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none";
 
 export default function ClienteLogin() {
-  const { login } = useAuth();
+  const { login, session, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
   const [cargando, setCargando] = useState(false);
+
+  // Igual que en el login de admin: navegar solo cuando el contexto confirma
+  // la sesión, no justo al resolver login(), para no adelantarse al listener
+  // de Supabase y acabar de vuelta en esta pantalla tras iniciar sesión bien.
+  useEffect(() => {
+    if (!loading && session) {
+      navigate("/cuenta", { replace: true });
+    }
+  }, [loading, session, navigate]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -29,10 +38,8 @@ export default function ClienteLogin() {
     setCargando(true);
     try {
       await login(email, password);
-      navigate("/cuenta");
     } catch {
       setError("Email o contraseña incorrectos");
-    } finally {
       setCargando(false);
     }
   }

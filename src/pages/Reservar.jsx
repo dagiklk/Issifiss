@@ -34,7 +34,7 @@ function proximosDias(cantidad = 21) {
 }
 
 export default function Reservar() {
-  const { session, isAdmin, signUp } = useAuth();
+  const { session, isAdmin, signUp, login } = useAuth();
   const clienteLogueado = Boolean(session) && !isAdmin;
 
   const [paso, setPaso] = useState(0);
@@ -47,6 +47,17 @@ export default function Reservar() {
   const [errorReserva, setErrorReserva] = useState(null);
   const [citaConfirmada, setCitaConfirmada] = useState(null);
   const [cuentaPendienteConfirmacion, setCuentaPendienteConfirmacion] = useState(false);
+
+  // Login opcional dentro del propio paso "Tus datos": un cliente que ya
+  // tiene cuenta pero no había iniciado sesión podía, sin darse cuenta,
+  // reservar como invitado y acabar con una ficha de paciente duplicada sin
+  // enlazar a su cuenta (el matching de invitados solo busca entre pacientes
+  // sin cuenta, ver crear-cita). Iniciar sesión aquí evita ese duplicado.
+  const [mostrarLogin, setMostrarLogin] = useState(false);
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [loginError, setLoginError] = useState(null);
+  const [loginCargando, setLoginCargando] = useState(false);
 
   useEffect(() => {
     async function cargarServicios() {
@@ -84,6 +95,25 @@ export default function Reservar() {
       active = false;
     };
   }, [clienteLogueado, session]);
+
+  async function handleLoginInline(e) {
+    e.preventDefault();
+    setLoginError(null);
+    if (!loginEmail.trim() || !loginPassword.trim()) {
+      setLoginError("Introduce tu email y contraseña");
+      return;
+    }
+    setLoginCargando(true);
+    try {
+      await login(loginEmail.trim(), loginPassword);
+      // Al iniciar sesión, "clienteLogueado" pasa a true y el efecto de más
+      // arriba precarga sus datos; este bloque deja de renderizarse solo.
+    } catch {
+      setLoginError("Email o contraseña incorrectos");
+    } finally {
+      setLoginCargando(false);
+    }
+  }
 
   async function confirmarReserva() {
     setEnviando(true);
@@ -244,6 +274,58 @@ export default function Reservar() {
                     Reservando como <strong>{datosPaciente.nombre}</strong>. Puedes corregir cualquier dato si hace falta.
                   </p>
                 )}
+
+                {!clienteLogueado && (
+                  <div className="mb-4 rounded-xl border border-line bg-canvas-sunken/60 p-3.5">
+                    {!mostrarLogin ? (
+                      <div className="flex flex-wrap items-center justify-between gap-2">
+                        <p className="text-[13px] text-ink-soft">¿Ya tienes cuenta con nosotros?</p>
+                        <button
+                          type="button"
+                          onClick={() => setMostrarLogin(true)}
+                          className="text-[13px] font-medium text-sage-700 underline underline-offset-2"
+                        >
+                          Inicia sesión para reservar
+                        </button>
+                      </div>
+                    ) : (
+                      <form onSubmit={handleLoginInline} className="flex flex-col gap-2.5">
+                        <div className="flex items-center justify-between">
+                          <p className="text-[13px] font-medium text-ink">Inicia sesión</p>
+                          <button
+                            type="button"
+                            onClick={() => setMostrarLogin(false)}
+                            className="text-[12.5px] text-ink-faint underline underline-offset-2"
+                          >
+                            Cancelar
+                          </button>
+                        </div>
+                        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                          <input
+                            type="email"
+                            autoFocus
+                            placeholder="tucorreo@ejemplo.com"
+                            value={loginEmail}
+                            onChange={(e) => setLoginEmail(e.target.value)}
+                            className="h-10 w-full rounded-lg border border-line bg-white px-3 text-[13.5px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none"
+                          />
+                          <input
+                            type="password"
+                            placeholder="Contraseña"
+                            value={loginPassword}
+                            onChange={(e) => setLoginPassword(e.target.value)}
+                            className="h-10 w-full rounded-lg border border-line bg-white px-3 text-[13.5px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none"
+                          />
+                        </div>
+                        {loginError && <p className="text-[12.5px] text-rose-600">{loginError}</p>}
+                        <Button type="submit" variant="accent" size="sm" disabled={loginCargando}>
+                          {loginCargando ? "Entrando…" : "Entrar"}
+                        </Button>
+                      </form>
+                    )}
+                  </div>
+                )}
+
                 <FormularioPaciente
                   datos={datosPaciente}
                   onChange={setDatosPaciente}

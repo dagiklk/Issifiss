@@ -146,6 +146,10 @@ export default function ClienteRegistro() {
                   Acepto el tratamiento de mis datos personales y de salud según la{" "}
                   <a href="/privacidad" className="font-medium text-sage-700 underline underline-offset-2">
                     política de privacidad
+                  </a>{" "}
+                  y los{" "}
+                  <a href="/terminos" className="font-medium text-sage-700 underline underline-offset-2">
+                    términos y condiciones
                   </a>
                   .
                 </span>

@@ -16,6 +16,13 @@ export function AuthProvider({ children }) {
     });
 
     const { data: listener } = supabase.auth.onAuthStateChange((_event, newSession) => {
+      // Flip checkingAdmin in the very same tick as the session change so
+      // `loading` (session loading || checkingAdmin) never has a moment
+      // where a fresh session is visible but its admin check hasn't even
+      // started — that gap was letting ProtectedRoute read a stale
+      // "logged in, not admin" state right after signing in and bounce
+      // back to /admin/login, forcing a second login attempt to succeed.
+      setCheckingAdmin(!!newSession);
       setSession(newSession);
     });
 
