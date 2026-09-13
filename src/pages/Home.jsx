@@ -258,41 +258,43 @@ export default function Home() {
         </Reveal>
 
         <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 lg:grid-rows-2">
-          {/* Tarjeta grande: bio de Isaac */}
-          <Reveal className="lg:col-span-2 lg:row-span-2">
-            <div className="flex h-full flex-col gap-5 overflow-hidden rounded-3xl border border-line bg-white p-5 shadow-softer transition-shadow duration-200 hover:shadow-soft sm:flex-row sm:items-center sm:gap-7 sm:p-7">
-              <img
-                src={isaacPerfil}
-                alt="Isaac Rodríguez, fisioterapeuta"
-                className="aspect-[4/5] w-full max-w-[160px] shrink-0 rounded-2xl object-cover object-top shadow-soft sm:max-w-[180px]"
-              />
-              <div>
-                <h3 className="font-display text-[18px] font-semibold tracking-display text-ink">
-                  Isaac Rodríguez, fisioterapeuta titulado
-                </h3>
-                <p className="mt-2 text-[13.5px] leading-relaxed text-ink-muted">
-                  Trato cercano y preciso, con formación académica sólida y experiencia en deporte
-                  de alto rendimiento: fútbol de Primera División Femenina, boxeo y competición.
-                </p>
-                <motion.div
-                  className="mt-4 flex flex-wrap gap-2"
-                  variants={staggerParent}
-                  initial="hidden"
-                  whileInView="show"
-                  viewport={{ once: true, amount: 0.4 }}
-                >
-                  {CREDENCIALES.map(({ icon: Icon, texto }) => (
-                    <motion.div
-                      key={texto}
-                      variants={staggerItem}
-                      className="flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-[12px] font-medium text-ink-soft"
-                    >
-                      <Icon size={13} strokeWidth={2} className="shrink-0 text-sage-600" />
-                      {texto}
-                    </motion.div>
-                  ))}
-                </motion.div>
-              </div>
+          {/* Foto profesional del fisio: primero, sola, a toda altura */}
+          <Reveal className="lg:row-span-2">
+            <img
+              src={isaacPerfil}
+              alt="Isaac Rodríguez, fisioterapeuta"
+              className="aspect-[4/5] w-full rounded-3xl border border-line object-cover object-top shadow-softer lg:aspect-auto lg:h-full"
+            />
+          </Reveal>
+
+          {/* Bio de Isaac: segunda tarjeta, separada de la foto */}
+          <Reveal delay={0.05} className="lg:col-span-2">
+            <div className="flex h-full flex-col justify-center gap-3 rounded-3xl border border-line bg-white p-6 shadow-softer transition-shadow duration-200 hover:shadow-soft sm:p-7">
+              <h3 className="font-display text-[18px] font-semibold tracking-display text-ink">
+                Isaac Rodríguez, fisioterapeuta titulado
+              </h3>
+              <p className="text-[13.5px] leading-relaxed text-ink-muted">
+                Trato cercano y preciso, con formación académica sólida y experiencia en deporte de
+                alto rendimiento: fútbol de Primera División Femenina, boxeo y competición.
+              </p>
+              <motion.div
+                className="flex flex-wrap gap-2"
+                variants={staggerParent}
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.4 }}
+              >
+                {CREDENCIALES.map(({ icon: Icon, texto }) => (
+                  <motion.div
+                    key={texto}
+                    variants={staggerItem}
+                    className="flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-[12px] font-medium text-ink-soft"
+                  >
+                    <Icon size={13} strokeWidth={2} className="shrink-0 text-sage-600" />
+                    {texto}
+                  </motion.div>
+                ))}
+              </motion.div>
             </div>
           </Reveal>
 
