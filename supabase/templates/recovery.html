@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+  <body style="margin:0; padding:0; background-color:#F5F5F7; font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F5F5F7; padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background-color:#FFFFFF; border-radius:16px; overflow:hidden;">
+            <tr>
+              <td style="padding:32px 32px 8px 32px;">
+                <p style="margin:0; font-size:15px; font-weight:700; letter-spacing:0.02em; color:#1D1D1F;">
+                  issi<span style="color:#2F9C84;">fiss</span>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 32px 0 32px;">
+                <h1 style="margin:0 0 12px 0; font-size:20px; line-height:1.3; color:#1D1D1F;">
+                  Restablece tu contraseña
+                </h1>
+                <p style="margin:0 0 20px 0; font-size:14px; line-height:1.6; color:#48484D;">
+                  Hemos recibido una solicitud para restablecer la contraseña de tu cuenta en issifiss.
+                  Si has sido tú, pulsa el siguiente botón para elegir una contraseña nueva:
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 24px 32px;" align="center">
+                <a
+                  href="{{ .ConfirmationURL }}"
+                  style="display:inline-block; background-color:#2F9C84; color:#FFFFFF; text-decoration:none; font-size:14px; font-weight:600; padding:12px 28px; border-radius:12px;"
+                >
+                  Restablecer contraseña
+                </a>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:0 32px 24px 32px;">
+                <p style="margin:0; font-size:12.5px; line-height:1.6; color:#6E6E73;">
+                  Si el botón no funciona, copia y pega este enlace en tu navegador:<br />
+                  <a href="{{ .ConfirmationURL }}" style="color:#2F9C84; word-break:break-all;">{{ .ConfirmationURL }}</a>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:16px 32px 32px 32px; border-top:1px solid #EDEDEF;">
+                <p style="margin:16px 0 0 0; font-size:12.5px; line-height:1.6; color:#A1A1A6;">
+                  Si no has solicitado este cambio, puedes ignorar este email con tranquilidad: tu
+                  contraseña actual seguirá funcionando y no se realizará ningún cambio.
+                </p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:20px 0 0 0; font-size:12px; color:#A1A1A6;">
+            issifiss · Fisioterapia
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
