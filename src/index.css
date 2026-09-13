@@ -561,3 +561,17 @@ label.form-label-issi {
     scroll-behavior: auto !important;
   }
 }
+
+/* ---------- Evitar el zoom automático de iOS Safari al enfocar un input ----------
+   Safari en iOS hace zoom automático sobre cualquier campo cuyo font-size
+   calculado sea menor de 16px. Se fuerza aquí para TODOS los input/select/
+   textarea del sitio (tanto los .form-control-issi de Bootstrap como los
+   Tailwind de /admin), en vez de subir el tamaño de letra manualmente campo
+   a campo — así no depende de que cada input use la clase de texto correcta. */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px !important;
+  }
+}
