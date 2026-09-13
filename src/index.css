@@ -567,11 +567,19 @@ label.form-label-issi {
    calculado sea menor de 16px. Se fuerza aquí para TODOS los input/select/
    textarea del sitio (tanto los .form-control-issi de Bootstrap como los
    Tailwind de /admin), en vez de subir el tamaño de letra manualmente campo
-   a campo — así no depende de que cada input use la clase de texto correcta. */
+   a campo — así no depende de que cada input use la clase de texto correcta.
+   El ":not(#zoom-fix-specificity)" no excluye nada real (ningún elemento
+   tiene ese id): es un truco para que el selector cuente como si tuviera un
+   id y así la especificidad supere a las utilidades de Tailwind, que en
+   este proyecto se generan TODAS con !important (tailwind.config.js,
+   "important: true", necesario para convivir con Bootstrap) — sin esto, una
+   clase como "text-sm" en un input le seguía ganando a esta regla pese a
+   ser ambas !important, porque a igualdad de "importancia" decide la
+   especificidad, y una clase gana a un selector de etiqueta simple. */
 @media (max-width: 767px) {
-  input,
-  select,
-  textarea {
+  input:not(#zoom-fix-specificity),
+  select:not(#zoom-fix-specificity),
+  textarea:not(#zoom-fix-specificity) {
     font-size: 16px !important;
   }
 }
