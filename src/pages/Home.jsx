@@ -239,7 +239,7 @@ export default function Home() {
               <ServicioCard
                 servicio={servicio}
                 destacado={servicio.nombre?.trim().toLowerCase().startsWith(SERVICIO_DESTACADO)}
-                onSelect={() => navigate("/reservar")}
+                onSelect={() => navigate("/reservar", { state: { servicioId: servicio.id } })}
               />
             </motion.div>
           ))}

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import clsx from "clsx";
 import { CalendarCheck2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
@@ -36,6 +37,8 @@ function proximosDias(cantidad = 21) {
 export default function Reservar() {
   const { session, isAdmin, signUp, login } = useAuth();
   const clienteLogueado = Boolean(session) && !isAdmin;
+  const location = useLocation();
+  const servicioIdPreseleccionado = location.state?.servicioId ?? null;
 
   const [paso, setPaso] = useState(0);
   const [servicios, setServicios] = useState([]);
@@ -66,10 +69,18 @@ export default function Reservar() {
         .select("*")
         .eq("activo", true)
         .order("precio", { ascending: true });
-      setServicios(data ?? []);
+      const lista = data ?? [];
+      setServicios(lista);
+
+      // El servicio elegido en la landing (Home) viaja como state de router;
+      // lo preseleccionamos aquí para no obligar a elegirlo otra vez.
+      if (servicioIdPreseleccionado) {
+        const encontrado = lista.find((s) => s.id === servicioIdPreseleccionado);
+        if (encontrado) setServicioSeleccionado(encontrado);
+      }
     }
     cargarServicios();
-  }, []);
+  }, [servicioIdPreseleccionado]);
 
   // Cliente con cuenta: precargamos sus datos para que no tenga que
   // rellenarlos de nuevo en el paso "Tus datos".

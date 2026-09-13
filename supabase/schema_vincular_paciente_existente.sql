@@ -31,9 +31,19 @@ begin
     return null;
   end if;
 
+  -- "limit 1": si por lo que sea hay más de un paciente invitado con este
+  -- mismo email (p.ej. una familia reservando varias veces con un email
+  -- compartido), sin este límite el update de más abajo los enlazaría TODOS
+  -- a esta cuenta de golpe — historiales de personas distintas mezclados en
+  -- un solo login. Nos quedamos con el más reciente.
   update pacientes
   set user_id = auth.uid()
-  where user_id is null and email = mi_email
+  where id = (
+    select id from pacientes
+    where user_id is null and email = mi_email
+    order by fecha_alta desc
+    limit 1
+  )
   returning * into resultado;
 
   return resultado;

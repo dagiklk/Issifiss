@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useState } 
 import { format } from "date-fns";
 import { supabase } from "../lib/supabaseClient.js";
 import { diaSemanaFromISO, slotsForDia, toUiCita, toUiPaciente, toUiServicio } from "../lib/clinicData.js";
+import { zonedTimeToUtc } from "../utils/dateHelpers.js";
 
 // Real data provider for the admin UI — everything here reads from and
 // writes to the live Supabase project (citas, pacientes, servicios,
@@ -47,6 +48,15 @@ export function AppointmentsProvider({ children }) {
     setDisponibilidad(data || []);
   }, []);
 
+  const refreshServicios = useCallback(async () => {
+    const { data, error } = await supabase.from("servicios").select("*").eq("activo", true).order("nombre");
+    if (error) {
+      setError(error);
+      return;
+    }
+    setServicios((data || []).map(toUiServicio));
+  }, []);
+
   useEffect(() => {
     let active = true;
 
@@ -76,13 +86,14 @@ export function AppointmentsProvider({ children }) {
       .on("postgres_changes", { event: "*", schema: "public", table: "citas" }, () => refreshCitas())
       .on("postgres_changes", { event: "*", schema: "public", table: "pacientes" }, () => refreshPacientes())
       .on("postgres_changes", { event: "*", schema: "public", table: "disponibilidad" }, () => refreshDisponibilidad())
+      .on("postgres_changes", { event: "*", schema: "public", table: "servicios" }, () => refreshServicios())
       .subscribe();
 
     return () => {
       active = false;
       supabase.removeChannel(channel);
     };
-  }, [refreshCitas, refreshPacientes, refreshDisponibilidad]);
+  }, [refreshCitas, refreshPacientes, refreshDisponibilidad, refreshServicios]);
 
   const crearPaciente = useCallback(async ({ nombre, telefono, email }) => {
     const { data, error } = await supabase
@@ -185,9 +196,7 @@ export function AppointmentsProvider({ children }) {
       const servicio = servicios.find((s) => s.id === servicioId);
       if (!servicio) throw new Error("Selecciona un tratamiento válido.");
 
-      const [h, m] = horaInicio.split(":").map(Number);
-      const inicio = new Date(`${fecha}T00:00:00`);
-      inicio.setHours(h, m, 0, 0);
+      const inicio = zonedTimeToUtc(fecha, horaInicio);
       const fin = new Date(inicio.getTime() + servicio.duracionMin * 60000);
 
       const { data, error } = await supabase
@@ -225,7 +234,7 @@ export function AppointmentsProvider({ children }) {
   }
   function getProxima(pacienteId, fromISO = format(new Date(), "yyyy-MM-dd")) {
     return getByPaciente(pacienteId)
-      .filter((c) => c.fecha >= fromISO && c.estado !== "cancelada")
+      .filter((c) => c.fecha >= fromISO && !["cancelada", "completada", "no_asistio"].includes(c.estado))
       .sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio))[0];
   }
   function getUltima(pacienteId, beforeISO = format(new Date(), "yyyy-MM-dd")) {
