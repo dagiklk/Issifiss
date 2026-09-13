@@ -44,7 +44,7 @@ const TZ = "Europe/Madrid";
 // Cliente con permisos de administrador — solo vive dentro de la Edge Function
 const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 
-// 0=domingo ... 6=sábado, igual que Date.prototype.getDay() y la columna
+// 0=domingom ... 6=sábado, igual que Date.prototype.getDay() y la columna
 // "disponibilidad.dia_semana", pero calculado en la zona horaria de la clínica.
 function diaSemanaLocal(fecha: Date): number {
   const dia = new Intl.DateTimeFormat("en-US", { timeZone: TZ, weekday: "short" }).format(fecha);
