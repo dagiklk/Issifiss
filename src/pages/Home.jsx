@@ -160,25 +160,72 @@ export default function Home() {
           botones quedan apilados en la izquierda (mismo resultado visual de
           antes, sin depender de "order-*").
         */}
-        <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-6 px-4 pb-8 pt-8 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:px-8 lg:pb-16 lg:pt-14">
-          <motion.div
-            className="relative"
-            initial={{ opacity: 0, y: 22 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.7, ease: EASE }}
-          >
-            <Eyebrow>Fisioterapia deportiva y rehabilitación</Eyebrow>
-            <h1 className="mt-4 font-display text-[32px] font-semibold leading-[1.08] tracking-display text-ink sm:text-[40px] lg:text-[44px]">
-              Recupera tu <span className="text-sage-600">movimiento</span>, a tu ritmo.
-            </h1>
-            <p className="mt-4 max-w-md text-[15.5px] leading-relaxed text-ink-muted">
-              Sesiones personalizadas con ecografía diagnóstica incluida en consulta. Reserva
-              online en menos de un minuto.
-            </p>
-          </motion.div>
+        {/*
+          La foto se renderiza dos veces a propósito (misma imagen, mismo
+          "src" → el navegador no la vuelve a descargar): una en el flujo de
+          la columna izquierda, visible solo <lg y colocada entre el
+          subtítulo y los botones; otra como columna derecha, visible solo
+          en lg+. Antes la foto era un único elemento con "lg:row-span-2" en
+          esta grid, y eso obligaba a la fila de los botones a heredar la
+          altura de la foto (mucho más alta que el texto), dejando un hueco
+          vacío enorme entre el subtítulo y los botones en portátil. Con dos
+          columnas simples (sin row-span) cada una mide solo lo que su
+          propio contenido necesita.
+        */}
+        <div className="mx-auto grid max-w-5xl grid-cols-1 items-start gap-6 px-4 pb-8 pt-8 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-10 lg:px-8 lg:pb-16 lg:pt-14">
+          <div className="flex flex-col gap-6">
+            <motion.div
+              initial={{ opacity: 0, y: 22 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.7, ease: EASE }}
+            >
+              <Eyebrow>Fisioterapia deportiva y rehabilitación</Eyebrow>
+              <h1 className="mt-4 font-display text-[32px] font-semibold leading-[1.08] tracking-display text-ink sm:text-[40px] lg:text-[44px]">
+                Recupera tu <span className="text-sage-600">movimiento</span>, a tu ritmo.
+              </h1>
+              <p className="mt-4 max-w-md text-[15.5px] leading-relaxed text-ink-muted">
+                Sesiones personalizadas con ecografía diagnóstica incluida en consulta. Reserva
+                online en menos de un minuto.
+              </p>
+            </motion.div>
 
+            {/* Foto — solo en móvil/tablet, aquí entre el subtítulo y los botones */}
+            <motion.div
+              className="relative mx-auto w-full max-w-[210px] sm:max-w-[260px] lg:hidden"
+              initial={{ opacity: 0, scale: 0.96 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.8, ease: EASE, delay: 0.15 }}
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-sage-200/50 blur-2xl"
+              />
+              <img
+                src={isaacPerfil}
+                alt="Isaac Rodríguez, fisioterapeuta"
+                className="aspect-[4/5] w-full rounded-[24px] object-cover object-top shadow-raised"
+              />
+            </motion.div>
+
+            <motion.div
+              className="flex flex-wrap gap-3"
+              initial={{ opacity: 0, y: 14 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
+            >
+              <Button as={Link} to="/reservar" variant="accent" size="md">
+                Reservar cita
+                <ArrowRight size={16} strokeWidth={2.2} />
+              </Button>
+              <Button as="a" href="#servicios" variant="secondary" size="md">
+                Ver servicios
+              </Button>
+            </motion.div>
+          </div>
+
+          {/* Foto — solo en escritorio (lg+), columna derecha con las insignias */}
           <motion.div
-            className="relative mx-auto w-full max-w-[210px] sm:max-w-[300px] lg:max-w-none lg:row-span-2"
+            className="relative mx-auto hidden w-full max-w-[420px] lg:block"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.15 }}
@@ -196,13 +243,11 @@ export default function Home() {
                 alt="Isaac Rodríguez, fisioterapeuta"
                 className="aspect-[4/5] w-full rounded-[24px] object-cover object-top shadow-raised"
               />
-              {/* Insignias flotantes: solo desde sm — en el tamaño reducido de
-                  móvil no caben sin verse apretadas. */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: EASE, delay: 0.5 }}
-                className="absolute -bottom-4 left-5 right-auto hidden w-64 items-center gap-3 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-soft backdrop-blur-md sm:flex"
+                className="absolute -bottom-4 left-5 flex w-64 items-center gap-3 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-soft backdrop-blur-md"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
                   <GraduationCap size={16} strokeWidth={2} />
@@ -216,27 +261,12 @@ export default function Home() {
                 initial={{ opacity: 0, y: -8, x: 8 }}
                 animate={{ opacity: 1, y: 0, x: 0 }}
                 transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
-                className="absolute -top-4 -right-3 hidden items-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-3.5 py-2.5 shadow-soft backdrop-blur-md lg:flex"
+                className="absolute -top-4 -right-3 flex items-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-3.5 py-2.5 shadow-soft backdrop-blur-md"
               >
                 <Check size={15} strokeWidth={2.6} className="text-sage-600" />
                 <p className="whitespace-nowrap text-[12px] font-semibold text-ink">Cita en &lt;1 min</p>
               </motion.div>
             </div>
-          </motion.div>
-
-          <motion.div
-            className="flex flex-wrap gap-3"
-            initial={{ opacity: 0, y: 14 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
-          >
-            <Button as={Link} to="/reservar" variant="accent" size="lg">
-              Reservar cita
-              <ArrowRight size={16} strokeWidth={2.2} />
-            </Button>
-            <Button as="a" href="#servicios" variant="secondary" size="lg">
-              Ver servicios
-            </Button>
           </motion.div>
         </div>
 
