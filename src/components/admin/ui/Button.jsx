@@ -2,8 +2,8 @@ import clsx from "clsx";
 import { forwardRef } from "react";
 
 const VARIANTS = {
-  primary: "bg-ink text-white hover:bg-[#000] active:bg-ink",
-  accent: "bg-sage-600 text-white hover:bg-sage-700 active:bg-sage-700",
+  primary: "bg-ink text-white shadow-softer hover:bg-[#000] active:bg-ink",
+  accent: "bg-sage-600 text-white shadow-[0_10px_24px_-10px_rgba(30,130,113,0.55)] hover:bg-sage-700 hover:shadow-[0_14px_30px_-10px_rgba(30,130,113,0.6)] active:bg-sage-700",
   secondary: "bg-white text-ink border border-line-strong hover:bg-canvas-sunken",
   ghost: "bg-transparent text-ink hover:bg-black/[0.04]",
   danger: "bg-white text-rose-600 border border-rose-100 hover:bg-rose-50",
@@ -15,10 +15,13 @@ const VARIANTS = {
   invert: "bg-white text-sage-700 hover:bg-sage-50 active:bg-sage-50",
 };
 
+// Antes eran muy finos (h-9/h-11/h-13, font-medium): se suben alturas,
+// paddings y grosor de fuente en todo el sitio para que se sientan botones
+// "premium", no controles de formulario genéricos.
 const SIZES = {
-  sm: "h-9 px-3.5 text-[13px] gap-1.5 rounded-xl",
-  md: "h-11 px-5 text-[15px] gap-2 rounded-xl",
-  lg: "h-13 px-6 text-[16px] gap-2 rounded-2xl",
+  sm: "h-10 px-4 text-[13.5px] gap-1.5 rounded-xl",
+  md: "h-12 px-6 text-[15px] gap-2 rounded-xl",
+  lg: "h-14 px-8 text-[16.5px] gap-2 rounded-2xl",
 };
 
 /**
@@ -33,8 +36,8 @@ const Button = forwardRef(function Button(
     <Component
       ref={ref}
       className={clsx(
-        "inline-flex items-center justify-center font-medium select-none",
-        "transition-[transform,background-color,opacity] duration-150 ease-out",
+        "inline-flex items-center justify-center font-semibold select-none",
+        "transition-[transform,background-color,box-shadow,opacity] duration-150 ease-out",
         "active:scale-[0.97] disabled:opacity-40 disabled:pointer-events-none",
         block && "w-full",
         VARIANTS[variant],

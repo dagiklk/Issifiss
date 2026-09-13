@@ -76,14 +76,14 @@ const SERVICIO_DESTACADO = "primera visita";
 
 // Envoltorio de scroll-reveal reutilizado por toda la página: aparece una vez,
 // al entrar en el viewport, con la misma curva que el resto de la UI.
-function Reveal({ children, delay = 0, y = 22, className }) {
+function Reveal({ children, delay = 0, y = 18, className }) {
   return (
     <motion.div
       className={className}
       initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, amount: 0.3 }}
-      transition={{ duration: 0.7, ease: EASE, delay }}
+      transition={{ duration: 0.6, ease: EASE, delay }}
     >
       {children}
     </motion.div>
@@ -95,19 +95,32 @@ const staggerParent = {
   show: { transition: { staggerChildren: 0.09, delayChildren: 0.05 } },
 };
 const staggerItem = {
-  hidden: { opacity: 0, y: 16 },
-  show: { opacity: 1, y: 0, transition: { duration: 0.5, ease: EASE } },
+  hidden: { opacity: 0, y: 14 },
+  show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE } },
 };
 
 // Etiqueta reutilizada como "eyebrow" editorial encima de cada titular de
 // sección — la misma pastilla sage-50 en todas partes da consistencia visual
 // sin depender de color adicional.
-function Eyebrow({ children }) {
+function Eyebrow({ children, dark }) {
   return (
-    <span className="inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12.5px] font-medium text-sage-700">
+    <span
+      className={
+        dark
+          ? "inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[12px] font-medium text-sage-300"
+          : "inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12px] font-medium text-sage-700"
+      }
+    >
       {children}
     </span>
   );
+}
+
+// Blob de fondo, difuminado, reutilizado como "decoración" detrás de varias
+// secciones para dar sensación de profundidad sin recurrir a gradientes
+// llamativos: un único color a muy baja opacidad y mucho blur.
+function GlowOrb({ className }) {
+  return <div aria-hidden className={`pointer-events-none absolute rounded-full blur-3xl ${className}`} />;
 }
 
 export default function Home() {
@@ -116,7 +129,7 @@ export default function Home() {
 
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const heroImgY = useTransform(scrollYProgress, [0, 1], [0, 36]);
+  const heroImgY = useTransform(scrollYProgress, [0, 1], [0, 28]);
 
   useEffect(() => {
     async function cargarServicios() {
@@ -143,32 +156,27 @@ export default function Home() {
       <Navbar />
 
       {/* ================= HERO ================= */}
-      <section
-        ref={heroRef}
-        className="relative overflow-hidden"
-      >
-        {/* Fondo: una única mancha de color muy sutil, no un gradiente vistoso */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_50%_at_82%_8%,theme(colors.sage.50),transparent_70%)]"
-        />
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-14 px-4 pb-16 pt-14 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:px-8 lg:pb-24 lg:pt-24 xl:min-h-[calc(100dvh-72px)] xl:pb-28 xl:pt-28">
+      <section ref={heroRef} className="relative overflow-hidden">
+        {/* Malla de fondo: dos manchas de color muy suaves y difuminadas, en vez
+            de un gradiente plano — es lo que da el aire "2026" sin ser ruidoso. */}
+        <GlowOrb className="-left-24 -top-32 h-[420px] w-[420px] bg-sage-200/40" />
+        <GlowOrb className="-right-32 top-10 h-[380px] w-[380px] bg-sage-100/70" />
+        <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-4 pb-12 pt-10 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:px-8 lg:pb-16 lg:pt-14">
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            className="relative"
+            initial={{ opacity: 0, y: 22 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: EASE }}
+            transition={{ duration: 0.7, ease: EASE }}
           >
             <Eyebrow>Fisioterapia deportiva y rehabilitación</Eyebrow>
-            <h1 className="mt-5 font-display text-[42px] font-semibold leading-[1.04] tracking-display text-ink sm:text-[56px] lg:text-[64px] xl:text-[72px]">
-              Recupera tu
-              <br />
-              <span className="text-sage-600">movimiento</span>, a tu ritmo.
+            <h1 className="mt-4 font-display text-[32px] font-semibold leading-[1.08] tracking-display text-ink sm:text-[40px] lg:text-[44px]">
+              Recupera tu <span className="text-sage-600">movimiento</span>, a tu ritmo.
             </h1>
-            <p className="mt-6 max-w-md text-[17px] leading-relaxed text-ink-muted">
+            <p className="mt-4 max-w-md text-[15.5px] leading-relaxed text-ink-muted">
               Sesiones personalizadas con ecografía diagnóstica incluida en consulta. Reserva
               online en menos de un minuto.
             </p>
-            <div className="mt-9 flex flex-wrap gap-3">
+            <div className="mt-7 flex flex-wrap gap-3">
               <Button as={Link} to="/reservar" variant="accent" size="lg">
                 Reservar cita
                 <ArrowRight size={16} strokeWidth={2.2} />
@@ -180,52 +188,58 @@ export default function Home() {
           </motion.div>
 
           <motion.div
-            className="relative mx-auto w-full max-w-[420px] lg:max-w-none"
+            className="relative mx-auto w-full max-w-[360px] lg:max-w-none"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.9, ease: EASE, delay: 0.15 }}
+            transition={{ duration: 0.8, ease: EASE, delay: 0.15 }}
             style={{ y: heroImgY }}
           >
             <div className="relative">
+              {/* Resplandor difuminado justo detrás de la imagen: efecto de
+                  "glow" sutil, coherente con el resto de la malla de fondo. */}
+              <div
+                aria-hidden
+                className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-sage-200/50 blur-2xl"
+              />
               <img
                 src={ecoDetalle}
                 alt="Fisioterapeuta realizando una ecografía diagnóstica en consulta"
-                className="aspect-[4/5] w-full rounded-[28px] object-cover shadow-raised sm:aspect-[4/3] lg:aspect-[4/5]"
+                className="aspect-[4/3] w-full rounded-[24px] object-cover shadow-raised"
               />
               <motion.div
-                initial={{ opacity: 0, y: 12 }}
+                initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, ease: EASE, delay: 0.55 }}
-                className="absolute -bottom-5 left-5 right-5 flex items-center gap-3 rounded-2xl border border-line bg-white/95 p-3.5 shadow-soft backdrop-blur sm:left-6 sm:right-auto sm:w-72"
+                transition={{ duration: 0.6, ease: EASE, delay: 0.5 }}
+                className="absolute -bottom-4 left-4 right-4 flex items-center gap-3 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-soft backdrop-blur-md sm:left-5 sm:right-auto sm:w-64"
               >
-                <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
-                  <i className="bi bi-soundwave text-[17px]"></i>
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
+                  <i className="bi bi-soundwave text-[15px]"></i>
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[13.5px] font-semibold text-ink">Ecógrafo en consulta</p>
-                  <p className="truncate text-[12px] text-ink-muted">Diagnóstico por imagen incluido</p>
+                  <p className="text-[13px] font-semibold text-ink">Ecógrafo en consulta</p>
+                  <p className="truncate text-[11.5px] text-ink-muted">Diagnóstico por imagen incluido</p>
                 </div>
               </motion.div>
               <motion.div
-                initial={{ opacity: 0, y: -10, x: 10 }}
+                initial={{ opacity: 0, y: -8, x: 8 }}
                 animate={{ opacity: 1, y: 0, x: 0 }}
-                transition={{ duration: 0.7, ease: EASE, delay: 0.75 }}
-                className="absolute -top-5 -right-3 hidden items-center gap-2 rounded-2xl border border-line bg-white/95 px-4 py-3 shadow-soft backdrop-blur sm:flex"
+                transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
+                className="absolute -top-4 -right-3 hidden items-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-3.5 py-2.5 shadow-soft backdrop-blur-md sm:flex"
               >
-                <Check size={16} strokeWidth={2.6} className="text-sage-600" />
-                <p className="whitespace-nowrap text-[12.5px] font-semibold text-ink">Cita en &lt;1 min</p>
+                <Check size={15} strokeWidth={2.6} className="text-sage-600" />
+                <p className="whitespace-nowrap text-[12px] font-semibold text-ink">Cita en &lt;1 min</p>
               </motion.div>
             </div>
           </motion.div>
         </div>
 
         {/* Franja de confianza: cierra el hero con hechos concretos, sin relleno */}
-        <div className="border-y border-line bg-canvas-sunken/60">
-          <div className="mx-auto max-w-6xl px-4 py-5 lg:px-8">
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-10 sm:gap-y-2.5">
+        <div className="relative border-y border-line bg-white/60 backdrop-blur-sm">
+          <div className="mx-auto max-w-5xl px-4 py-4 lg:px-8">
+            <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-9 sm:gap-y-2">
               {TRUST_STRIP.map(({ icon: Icon, texto }) => (
-                <div key={texto} className="flex items-center gap-2 text-[13.5px] font-medium text-ink-soft">
-                  <Icon size={15} strokeWidth={2.1} className="shrink-0 text-sage-600" />
+                <div key={texto} className="flex items-center gap-2 text-[13px] font-medium text-ink-soft">
+                  <Icon size={14} strokeWidth={2.1} className="shrink-0 text-sage-600" />
                   {texto}
                 </div>
               ))}
@@ -235,33 +249,33 @@ export default function Home() {
       </section>
 
       {/* ================= BENTO: POR QUÉ ELEGIRNOS ================= */}
-      <section className="mx-auto max-w-6xl px-4 py-20 lg:px-8 lg:py-28">
-        <Reveal className="mx-auto mb-10 max-w-xl text-center lg:mb-14">
+      <section className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
+        <Reveal className="mx-auto mb-8 max-w-xl text-center lg:mb-10">
           <Eyebrow>Por qué elegirnos</Eyebrow>
-          <h2 className="mt-4 font-display text-[30px] font-semibold tracking-display text-ink sm:text-[36px]">
+          <h2 className="mt-3 font-display text-[23px] font-semibold tracking-display text-ink sm:text-[27px]">
             Un fisioterapeuta, no una cadena de citas
           </h2>
         </Reveal>
 
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-3 lg:grid-rows-2">
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 lg:grid-rows-2">
           {/* Tarjeta grande: bio de Isaac */}
           <Reveal className="lg:col-span-2 lg:row-span-2">
-            <div className="flex h-full flex-col gap-6 overflow-hidden rounded-3xl border border-line bg-white p-6 shadow-softer sm:flex-row sm:items-center sm:gap-8 sm:p-8">
+            <div className="flex h-full flex-col gap-5 overflow-hidden rounded-3xl border border-line bg-white p-5 shadow-softer transition-shadow duration-200 hover:shadow-soft sm:flex-row sm:items-center sm:gap-7 sm:p-7">
               <img
                 src={isaacPerfil}
                 alt="Isaac Rodríguez, fisioterapeuta"
-                className="aspect-[4/5] w-full max-w-[180px] shrink-0 rounded-2xl object-cover object-top shadow-soft sm:max-w-[200px]"
+                className="aspect-[4/5] w-full max-w-[160px] shrink-0 rounded-2xl object-cover object-top shadow-soft sm:max-w-[180px]"
               />
               <div>
-                <h3 className="font-display text-[21px] font-semibold tracking-display text-ink">
+                <h3 className="font-display text-[18px] font-semibold tracking-display text-ink">
                   Isaac Rodríguez, fisioterapeuta titulado
                 </h3>
-                <p className="mt-2.5 text-[14.5px] leading-relaxed text-ink-muted">
+                <p className="mt-2 text-[13.5px] leading-relaxed text-ink-muted">
                   Trato cercano y preciso, con formación académica sólida y experiencia en deporte
                   de alto rendimiento: fútbol de Primera División Femenina, boxeo y competición.
                 </p>
                 <motion.div
-                  className="mt-5 flex flex-wrap gap-2"
+                  className="mt-4 flex flex-wrap gap-2"
                   variants={staggerParent}
                   initial="hidden"
                   whileInView="show"
@@ -271,7 +285,7 @@ export default function Home() {
                     <motion.div
                       key={texto}
                       variants={staggerItem}
-                      className="flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-[12.5px] font-medium text-ink-soft"
+                      className="flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-[12px] font-medium text-ink-soft"
                     >
                       <Icon size={13} strokeWidth={2} className="shrink-0 text-sage-600" />
                       {texto}
@@ -284,29 +298,30 @@ export default function Home() {
 
           {/* Tarjeta: diploma / credencial visual */}
           <Reveal delay={0.05}>
-            <div className="group relative h-full min-h-[180px] overflow-hidden rounded-3xl border border-line shadow-softer">
+            <div className="group relative h-full min-h-[150px] overflow-hidden rounded-3xl border border-line shadow-softer">
               <img
                 src={diplomaGrado}
                 alt="Diploma de Grado en Fisioterapia, Universidad Francisco de Vitoria"
                 className="h-full w-full object-cover object-[50%_25%] transition-transform duration-700 ease-out group-hover:scale-[1.04]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
-              <div className="absolute inset-x-0 bottom-0 p-5">
-                <p className="text-[13px] font-semibold text-white">Grado en Fisioterapia</p>
-                <p className="text-[12px] text-white/75">Universidad Francisco de Vitoria</p>
+              <div className="absolute inset-x-0 bottom-0 p-4">
+                <p className="text-[12.5px] font-semibold text-white">Grado en Fisioterapia</p>
+                <p className="text-[11.5px] text-white/75">Universidad Francisco de Vitoria</p>
               </div>
             </div>
           </Reveal>
 
           {/* Tarjeta: resultado inmediato */}
           <Reveal delay={0.1}>
-            <div className="flex h-full flex-col justify-between gap-6 rounded-3xl border border-line bg-ink p-6 shadow-softer">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/10 text-white">
-                <Activity size={18} strokeWidth={1.9} />
+            <div className="relative flex h-full flex-col justify-between gap-5 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#141715] via-ink to-[#0e2119] p-5 shadow-softer">
+              <GlowOrb className="-bottom-10 -right-10 h-40 w-40 bg-sage-500/25" />
+              <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur">
+                <Activity size={17} strokeWidth={1.9} />
               </span>
-              <div>
-                <p className="text-[15px] font-semibold text-white">Diagnóstico en la misma sesión</p>
-                <p className="mt-1.5 text-[13px] leading-relaxed text-white/60">
+              <div className="relative">
+                <p className="text-[14px] font-semibold text-white">Diagnóstico en la misma sesión</p>
+                <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/60">
                   Nada de listas de espera de radiología: vemos la lesión contigo, en directo, con
                   el ecógrafo de consulta.
                 </p>
@@ -317,17 +332,18 @@ export default function Home() {
       </section>
 
       {/* ================= CÓMO FUNCIONA ================= */}
-      <section className="border-y border-line bg-canvas-sunken/60">
-        <div className="mx-auto max-w-6xl px-4 py-20 lg:px-8 lg:py-28">
-          <Reveal className="mx-auto mb-14 max-w-xl text-center">
+      <section className="relative overflow-hidden border-y border-line bg-canvas-sunken/60">
+        <GlowOrb className="left-1/2 top-0 h-[360px] w-[600px] -translate-x-1/2 bg-sage-100/60" />
+        <div className="relative mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
+          <Reveal className="mx-auto mb-10 max-w-xl text-center">
             <Eyebrow>Cómo funciona</Eyebrow>
-            <h2 className="mt-4 font-display text-[30px] font-semibold tracking-display text-ink sm:text-[36px]">
+            <h2 className="mt-3 font-display text-[23px] font-semibold tracking-display text-ink sm:text-[27px]">
               De la reserva al alivio, en tres pasos
             </h2>
           </Reveal>
 
           <motion.div
-            className="grid grid-cols-1 gap-8 sm:grid-cols-3 sm:gap-6"
+            className="grid grid-cols-1 gap-6 sm:grid-cols-3 sm:gap-5"
             variants={staggerParent}
             initial="hidden"
             whileInView="show"
@@ -335,22 +351,22 @@ export default function Home() {
           >
             {PASOS.map(({ numero, icon: Icon, titulo, texto }, i) => (
               <motion.div key={numero} variants={staggerItem} className="relative">
-                <div className="flex h-full flex-col gap-4 rounded-3xl border border-line bg-white p-6 shadow-softer">
+                <div className="flex h-full flex-col gap-3.5 rounded-3xl border border-line bg-white/90 p-5 shadow-softer backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-soft">
                   <div className="flex items-center justify-between">
-                    <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-sage-50 text-sage-700">
-                      <Icon size={19} strokeWidth={1.9} />
+                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sage-50 text-sage-700">
+                      <Icon size={18} strokeWidth={1.9} />
                     </span>
-                    <span className="font-display text-[26px] font-semibold text-line-strong">{numero}</span>
+                    <span className="font-display text-[22px] font-semibold text-line-strong">{numero}</span>
                   </div>
                   <div>
-                    <h3 className="text-[16px] font-semibold text-ink">{titulo}</h3>
-                    <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-muted">{texto}</p>
+                    <h3 className="text-[15px] font-semibold text-ink">{titulo}</h3>
+                    <p className="mt-1.5 text-[13px] leading-relaxed text-ink-muted">{texto}</p>
                   </div>
                 </div>
                 {i < PASOS.length - 1 && (
                   <div
                     aria-hidden
-                    className="absolute top-1/2 -right-6 hidden h-px w-6 -translate-y-1/2 bg-line-strong sm:block"
+                    className="absolute top-1/2 -right-5 hidden h-px w-5 -translate-y-1/2 bg-line-strong sm:block"
                   />
                 )}
               </motion.div>
@@ -360,13 +376,13 @@ export default function Home() {
       </section>
 
       {/* ================= SERVICIOS ================= */}
-      <section id="servicios" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-20 lg:px-8 lg:py-28">
-        <Reveal className="mx-auto mb-10 max-w-xl text-center lg:mb-14">
+      <section id="servicios" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-14 lg:px-8 lg:py-20">
+        <Reveal className="mx-auto mb-8 max-w-xl text-center lg:mb-10">
           <Eyebrow>Servicios</Eyebrow>
-          <h2 className="mt-4 font-display text-[30px] font-semibold tracking-display text-ink sm:text-[36px]">
+          <h2 className="mt-3 font-display text-[23px] font-semibold tracking-display text-ink sm:text-[27px]">
             Elige tu sesión
           </h2>
-          <p className="mt-3 text-[14.5px] text-ink-muted">Resérvala en menos de un minuto, sin llamadas.</p>
+          <p className="mt-2.5 text-[13.5px] text-ink-muted">Resérvala en menos de un minuto, sin llamadas.</p>
         </Reveal>
         <motion.div
           className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3"
@@ -391,7 +407,7 @@ export default function Home() {
           )}
         </motion.div>
         {servicios.length > 0 && (
-          <Reveal className="mt-8 flex justify-center">
+          <Reveal className="mt-7 flex justify-center">
             <Button as={Link} to="/reservar" variant="accent">
               Ver horarios disponibles
             </Button>
@@ -400,13 +416,15 @@ export default function Home() {
       </section>
 
       {/* ================= ECOGRAFÍA (a pantalla completa) ================= */}
-      <section className="border-y border-line bg-ink">
-        <div className="mx-auto grid max-w-6xl grid-cols-1 items-center gap-10 px-4 py-20 lg:grid-cols-2 lg:gap-16 lg:px-8 lg:py-28">
-          <Reveal className="grid grid-cols-2 gap-3.5 lg:order-2">
+      <section className="relative overflow-hidden border-y border-line bg-ink">
+        <GlowOrb className="-left-20 top-1/3 h-[420px] w-[420px] bg-sage-500/10" />
+        <GlowOrb className="right-0 -bottom-20 h-[320px] w-[320px] bg-sage-400/10" />
+        <div className="relative mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 px-4 py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-20">
+          <Reveal className="grid grid-cols-2 gap-3 lg:order-2">
             <img
               src={ecoConsulta}
               alt="Fisioterapeuta explicando una imagen de ecografía al paciente"
-              className="aspect-[4/5] w-full translate-y-6 rounded-2xl object-cover shadow-raised"
+              className="aspect-[4/5] w-full translate-y-5 rounded-2xl object-cover shadow-raised"
             />
             <img
               src={ecoVascular}
@@ -417,38 +435,36 @@ export default function Home() {
 
           <div className="lg:order-1">
             <Reveal>
-              <span className="inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[12.5px] font-medium text-sage-300">
-                Diagnóstico por imagen
-              </span>
-              <h2 className="mb-4 mt-4 font-display text-[30px] font-semibold tracking-display text-white sm:text-[34px]">
+              <Eyebrow dark>Diagnóstico por imagen</Eyebrow>
+              <h2 className="mb-3 mt-3 font-display text-[23px] font-semibold tracking-display text-white sm:text-[27px]">
                 Ecografía musculoesquelética en la misma consulta
               </h2>
-              <p className="max-w-md text-[15px] leading-relaxed text-white/60">
+              <p className="max-w-md text-[14px] leading-relaxed text-white/60">
                 Localizamos la lesión en tiempo real y ajustamos el tratamiento en el momento, sin
                 desplazamientos ni listas de espera.
               </p>
             </Reveal>
             <motion.ul
-              className="mt-8 flex flex-col gap-5"
+              className="mt-7 flex flex-col gap-4"
               variants={staggerParent}
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, amount: 0.3 }}
             >
               {VENTAJAS.map(({ icon: Icon, titulo, texto }) => (
-                <motion.li key={titulo} variants={staggerItem} className="flex items-start gap-3.5">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sage-300">
-                    <Icon size={16} strokeWidth={1.9} />
+                <motion.li key={titulo} variants={staggerItem} className="flex items-start gap-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sage-300">
+                    <Icon size={15} strokeWidth={1.9} />
                   </span>
                   <div>
-                    <p className="text-[14px] font-semibold text-white">{titulo}</p>
-                    <p className="text-[13px] text-white/55">{texto}</p>
+                    <p className="text-[13.5px] font-semibold text-white">{titulo}</p>
+                    <p className="text-[12.5px] text-white/55">{texto}</p>
                   </div>
                 </motion.li>
               ))}
             </motion.ul>
             <Reveal delay={0.15}>
-              <Button as={Link} to="/reservar" variant="invert" className="mt-8">
+              <Button as={Link} to="/reservar" variant="invert" className="mt-7">
                 Reservar valoración con ecografía
               </Button>
             </Reveal>
@@ -457,19 +473,20 @@ export default function Home() {
       </section>
 
       {/* ================= CTA FINAL ================= */}
-      <Reveal className="mx-auto max-w-6xl px-4 py-20 lg:px-8 lg:py-28" y={30}>
-        <div className="relative overflow-hidden rounded-[32px] bg-sage-700 px-7 py-14 text-center shadow-raised sm:px-12 lg:py-20">
+      <Reveal className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20" y={24}>
+        <div className="relative overflow-hidden rounded-[28px] bg-sage-700 px-6 py-11 text-center shadow-raised sm:px-10 lg:py-16">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,255,255,0.10),transparent_70%)]"
+            className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,255,255,0.12),transparent_70%)]"
           />
-          <h2 className="mx-auto max-w-lg font-display text-[32px] font-semibold leading-[1.1] tracking-display text-white sm:text-[40px]">
+          <GlowOrb className="-left-10 -bottom-16 h-56 w-56 bg-white/10" />
+          <h2 className="relative mx-auto max-w-lg font-display text-[26px] font-semibold leading-[1.12] tracking-display text-white sm:text-[32px]">
             ¿Listo para moverte mejor?
           </h2>
-          <p className="mx-auto mt-3 max-w-sm text-[15px] text-sage-50">
+          <p className="relative mx-auto mt-2.5 max-w-sm text-[14px] text-sage-50">
             Reserva tu cita en menos de un minuto, sin llamadas ni esperas.
           </p>
-          <Button as={Link} to="/reservar" variant="invert" size="lg" className="relative mt-8">
+          <Button as={Link} to="/reservar" variant="invert" size="lg" className="relative mt-7">
             Reservar cita
             <ArrowRight size={16} strokeWidth={2.2} />
           </Button>
