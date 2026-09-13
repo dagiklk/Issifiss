@@ -6,13 +6,11 @@ import {
   Presentation,
   History,
   GraduationCap,
-  Trophy,
   Stethoscope,
   Check,
   ArrowRight,
   CalendarCheck2,
   ClipboardCheck,
-  Activity,
   ShieldCheck,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
@@ -20,7 +18,6 @@ import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ServicioCard from "../components/ServicioCard.jsx";
 import Button from "../components/admin/ui/Button.jsx";
-import ecoDetalle2 from "../assets/ecografia/eco-detalle-2.jpg";
 import ecoConsulta from "../assets/ecografia/eco-consulta.jpg";
 import ecoVascular from "../assets/ecografia/eco-vascular.jpg";
 import isaacPerfil from "../assets/educacion/isaac-fisioterapeuta-perfil.jpg";
@@ -33,12 +30,6 @@ const VENTAJAS = [
   { icon: Search, titulo: "Localización precisa", texto: "Tendones, músculo y tejidos blandos, en directo." },
   { icon: Presentation, titulo: "Te mostramos el hallazgo", texto: "Vemos la imagen juntos y te explicamos qué significa." },
   { icon: History, titulo: "Resultado inmediato", texto: "Integrado en la misma sesión de fisioterapia." },
-];
-
-const CREDENCIALES = [
-  { icon: GraduationCap, texto: "UFV + Universidad Europea" },
-  { icon: Stethoscope, texto: "Ecografía incluida en consulta" },
-  { icon: Trophy, texto: "Deporte de alto rendimiento" },
 ];
 
 const TRUST_STRIP = [
@@ -160,7 +151,16 @@ export default function Home() {
             de un gradiente plano — es lo que da el aire "2026" sin ser ruidoso. */}
         <GlowOrb className="-left-24 -top-32 h-[420px] w-[420px] bg-sage-200/40" />
         <GlowOrb className="-right-32 top-10 h-[380px] w-[380px] bg-sage-100/70" />
-        <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-12 px-4 pb-12 pt-10 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:px-8 lg:pb-16 lg:pt-14">
+        {/*
+          Orden deliberado de los 3 bloques (título, foto, botones) por DOM,
+          no por className: en móvil (grid-cols-1) se apilan tal cual en ese
+          orden — título → foto → botones —, y en desktop la foto recibe
+          lg:row-span-2, así que el auto-placement de grid la manda a la
+          columna derecha ocupando las dos filas, mientras el título y los
+          botones quedan apilados en la izquierda (mismo resultado visual de
+          antes, sin depender de "order-*").
+        */}
+        <div className="mx-auto grid max-w-5xl grid-cols-1 items-center gap-6 px-4 pb-8 pt-8 lg:grid-cols-[1.05fr_1fr] lg:gap-10 lg:px-8 lg:pb-16 lg:pt-14">
           <motion.div
             className="relative"
             initial={{ opacity: 0, y: 22 }}
@@ -175,19 +175,10 @@ export default function Home() {
               Sesiones personalizadas con ecografía diagnóstica incluida en consulta. Reserva
               online en menos de un minuto.
             </p>
-            <div className="mt-7 flex flex-wrap gap-3">
-              <Button as={Link} to="/reservar" variant="accent" size="lg">
-                Reservar cita
-                <ArrowRight size={16} strokeWidth={2.2} />
-              </Button>
-              <Button as="a" href="#servicios" variant="secondary" size="lg">
-                Ver servicios
-              </Button>
-            </div>
           </motion.div>
 
           <motion.div
-            className="relative mx-auto w-full max-w-[360px] lg:max-w-none"
+            className="relative mx-auto w-full max-w-[210px] sm:max-w-[300px] lg:max-w-none lg:row-span-2"
             initial={{ opacity: 0, scale: 0.96 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, ease: EASE, delay: 0.15 }}
@@ -205,11 +196,13 @@ export default function Home() {
                 alt="Isaac Rodríguez, fisioterapeuta"
                 className="aspect-[4/5] w-full rounded-[24px] object-cover object-top shadow-raised"
               />
+              {/* Insignias flotantes: solo desde sm — en el tamaño reducido de
+                  móvil no caben sin verse apretadas. */}
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: EASE, delay: 0.5 }}
-                className="absolute -bottom-4 left-4 right-4 flex items-center gap-3 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-soft backdrop-blur-md sm:left-5 sm:right-auto sm:w-64"
+                className="absolute -bottom-4 left-5 right-auto hidden w-64 items-center gap-3 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-soft backdrop-blur-md sm:flex"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
                   <GraduationCap size={16} strokeWidth={2} />
@@ -223,12 +216,27 @@ export default function Home() {
                 initial={{ opacity: 0, y: -8, x: 8 }}
                 animate={{ opacity: 1, y: 0, x: 0 }}
                 transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
-                className="absolute -top-4 -right-3 hidden items-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-3.5 py-2.5 shadow-soft backdrop-blur-md sm:flex"
+                className="absolute -top-4 -right-3 hidden items-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-3.5 py-2.5 shadow-soft backdrop-blur-md lg:flex"
               >
                 <Check size={15} strokeWidth={2.6} className="text-sage-600" />
                 <p className="whitespace-nowrap text-[12px] font-semibold text-ink">Cita en &lt;1 min</p>
               </motion.div>
             </div>
+          </motion.div>
+
+          <motion.div
+            className="flex flex-wrap gap-3"
+            initial={{ opacity: 0, y: 14 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
+          >
+            <Button as={Link} to="/reservar" variant="accent" size="lg">
+              Reservar cita
+              <ArrowRight size={16} strokeWidth={2.2} />
+            </Button>
+            <Button as="a" href="#servicios" variant="secondary" size="lg">
+              Ver servicios
+            </Button>
           </motion.div>
         </div>
 
@@ -244,82 +252,6 @@ export default function Home() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      {/* ================= BENTO: POR QUÉ ELEGIRNOS ================= */}
-      <section className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
-        <Reveal className="mx-auto mb-8 max-w-xl text-center lg:mb-10">
-          <Eyebrow>Por qué elegirnos</Eyebrow>
-          <h2 className="mt-3 font-display text-[23px] font-semibold tracking-display text-ink sm:text-[27px]">
-            Un fisioterapeuta, no una cadena de citas
-          </h2>
-        </Reveal>
-
-        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 lg:grid-rows-2">
-          {/* Bio de Isaac: tarjeta principal (la foto ya se muestra en el hero) */}
-          <Reveal className="lg:col-span-2 lg:row-span-2">
-            <div className="flex h-full flex-col justify-center gap-3.5 rounded-3xl border border-line bg-white p-6 shadow-softer transition-shadow duration-200 hover:shadow-soft sm:p-8">
-              <h3 className="font-display text-[19px] font-semibold tracking-display text-ink">
-                Isaac Rodríguez, fisioterapeuta titulado
-              </h3>
-              <p className="max-w-md text-[14px] leading-relaxed text-ink-muted">
-                Trato cercano y preciso, con formación académica sólida y experiencia en deporte de
-                alto rendimiento: fútbol de Primera División Femenina, boxeo y competición.
-              </p>
-              <motion.div
-                className="flex flex-wrap gap-2"
-                variants={staggerParent}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.4 }}
-              >
-                {CREDENCIALES.map(({ icon: Icon, texto }) => (
-                  <motion.div
-                    key={texto}
-                    variants={staggerItem}
-                    className="flex items-center gap-1.5 rounded-full border border-line bg-canvas px-3 py-1.5 text-[12px] font-medium text-ink-soft"
-                  >
-                    <Icon size={13} strokeWidth={2} className="shrink-0 text-sage-600" />
-                    {texto}
-                  </motion.div>
-                ))}
-              </motion.div>
-            </div>
-          </Reveal>
-
-          {/* Tarjeta: consulta con ecógrafo (sin repetir la foto de Isaac) */}
-          <Reveal delay={0.05}>
-            <div className="group relative h-full min-h-[150px] overflow-hidden rounded-3xl border border-line shadow-softer">
-              <img
-                src={ecoDetalle2}
-                alt="Consulta de fisioterapia con ecografía diagnóstica"
-                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
-              <div className="absolute inset-x-0 bottom-0 p-4">
-                <p className="text-[12.5px] font-semibold text-white">Ecógrafo en consulta</p>
-                <p className="text-[11.5px] text-white/75">Diagnóstico por imagen incluido</p>
-              </div>
-            </div>
-          </Reveal>
-
-          {/* Tarjeta: resultado inmediato */}
-          <Reveal delay={0.1}>
-            <div className="relative flex h-full flex-col justify-between gap-5 overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-[#141715] via-ink to-[#0e2119] p-5 shadow-softer">
-              <GlowOrb className="-bottom-10 -right-10 h-40 w-40 bg-sage-500/25" />
-              <span className="relative flex h-9 w-9 items-center justify-center rounded-xl bg-white/10 text-white backdrop-blur">
-                <Activity size={17} strokeWidth={1.9} />
-              </span>
-              <div className="relative">
-                <p className="text-[14px] font-semibold text-white">Diagnóstico en la misma sesión</p>
-                <p className="mt-1.5 text-[12.5px] leading-relaxed text-white/60">
-                  Nada de listas de espera de radiología: vemos la lesión contigo, en directo, con
-                  el ecógrafo de consulta.
-                </p>
-              </div>
-            </div>
-          </Reveal>
         </div>
       </section>
 
