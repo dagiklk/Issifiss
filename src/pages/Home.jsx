@@ -20,11 +20,10 @@ import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ServicioCard from "../components/ServicioCard.jsx";
 import Button from "../components/admin/ui/Button.jsx";
-import ecoDetalle from "../assets/ecografia/eco-detalle.jpg";
+import ecoDetalle2 from "../assets/ecografia/eco-detalle-2.jpg";
 import ecoConsulta from "../assets/ecografia/eco-consulta.jpg";
 import ecoVascular from "../assets/ecografia/eco-vascular.jpg";
 import isaacPerfil from "../assets/educacion/isaac-fisioterapeuta-perfil.jpg";
-import diplomaGrado from "../assets/educacion/diploma-grado-fisioterapia-ufv.jpg";
 
 // Curva de easing compartida con tailwind.config.js (transitionTimingFunction.out),
 // para que las animaciones de scroll se sientan igual que el resto de la UI.
@@ -202,9 +201,9 @@ export default function Home() {
                 className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-sage-200/50 blur-2xl"
               />
               <img
-                src={ecoDetalle}
-                alt="Fisioterapeuta realizando una ecografía diagnóstica en consulta"
-                className="aspect-[4/3] w-full rounded-[24px] object-cover shadow-raised"
+                src={isaacPerfil}
+                alt="Isaac Rodríguez, fisioterapeuta"
+                className="aspect-[4/5] w-full rounded-[24px] object-cover object-top shadow-raised"
               />
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -213,11 +212,11 @@ export default function Home() {
                 className="absolute -bottom-4 left-4 right-4 flex items-center gap-3 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-soft backdrop-blur-md sm:left-5 sm:right-auto sm:w-64"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
-                  <i className="bi bi-soundwave text-[15px]"></i>
+                  <GraduationCap size={16} strokeWidth={2} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-ink">Ecógrafo en consulta</p>
-                  <p className="truncate text-[11.5px] text-ink-muted">Diagnóstico por imagen incluido</p>
+                  <p className="text-[13px] font-semibold text-ink">Isaac Rodríguez</p>
+                  <p className="truncate text-[11.5px] text-ink-muted">Fisioterapeuta titulado, UFV</p>
                 </div>
               </motion.div>
               <motion.div
@@ -258,22 +257,13 @@ export default function Home() {
         </Reveal>
 
         <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3 lg:grid-rows-2">
-          {/* Foto profesional del fisio: primero, sola, a toda altura */}
-          <Reveal className="lg:row-span-2">
-            <img
-              src={isaacPerfil}
-              alt="Isaac Rodríguez, fisioterapeuta"
-              className="aspect-[4/5] w-full rounded-3xl border border-line object-cover object-top shadow-softer lg:aspect-auto lg:h-full"
-            />
-          </Reveal>
-
-          {/* Bio de Isaac: segunda tarjeta, separada de la foto */}
-          <Reveal delay={0.05} className="lg:col-span-2">
-            <div className="flex h-full flex-col justify-center gap-3 rounded-3xl border border-line bg-white p-6 shadow-softer transition-shadow duration-200 hover:shadow-soft sm:p-7">
-              <h3 className="font-display text-[18px] font-semibold tracking-display text-ink">
+          {/* Bio de Isaac: tarjeta principal (la foto ya se muestra en el hero) */}
+          <Reveal className="lg:col-span-2 lg:row-span-2">
+            <div className="flex h-full flex-col justify-center gap-3.5 rounded-3xl border border-line bg-white p-6 shadow-softer transition-shadow duration-200 hover:shadow-soft sm:p-8">
+              <h3 className="font-display text-[19px] font-semibold tracking-display text-ink">
                 Isaac Rodríguez, fisioterapeuta titulado
               </h3>
-              <p className="text-[13.5px] leading-relaxed text-ink-muted">
+              <p className="max-w-md text-[14px] leading-relaxed text-ink-muted">
                 Trato cercano y preciso, con formación académica sólida y experiencia en deporte de
                 alto rendimiento: fútbol de Primera División Femenina, boxeo y competición.
               </p>
@@ -298,18 +288,18 @@ export default function Home() {
             </div>
           </Reveal>
 
-          {/* Tarjeta: diploma / credencial visual */}
+          {/* Tarjeta: consulta con ecógrafo (sin repetir la foto de Isaac) */}
           <Reveal delay={0.05}>
             <div className="group relative h-full min-h-[150px] overflow-hidden rounded-3xl border border-line shadow-softer">
               <img
-                src={diplomaGrado}
-                alt="Diploma de Grado en Fisioterapia, Universidad Francisco de Vitoria"
-                className="h-full w-full object-cover object-[50%_25%] transition-transform duration-700 ease-out group-hover:scale-[1.04]"
+                src={ecoDetalle2}
+                alt="Consulta de fisioterapia con ecografía diagnóstica"
+                className="h-full w-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/0 to-black/0" />
               <div className="absolute inset-x-0 bottom-0 p-4">
-                <p className="text-[12.5px] font-semibold text-white">Grado en Fisioterapia</p>
-                <p className="text-[11.5px] text-white/75">Universidad Francisco de Vitoria</p>
+                <p className="text-[12.5px] font-semibold text-white">Ecógrafo en consulta</p>
+                <p className="text-[11.5px] text-white/75">Diagnóstico por imagen incluido</p>
               </div>
             </div>
           </Reveal>
