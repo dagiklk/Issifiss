@@ -80,9 +80,11 @@ async function notificarNuevaCita(datos: {
   pacienteEmail?: string | null;
   inicio: Date;
   notas?: string | null;
+  tokenConfirmacion: string;
 }) {
   const fechaFmt = formatearFecha(datos.inicio);
   const horaFmt = formatearHora(datos.inicio);
+  const enlaceConfirmar = `${SITE_URL}/confirmar?token=${datos.tokenConfirmacion}`;
 
   await enviarEmail({
     to: [EMAIL_FISIO],
@@ -96,7 +98,13 @@ async function notificarNuevaCita(datos: {
       ${datos.pacienteTelefono ? `<p><strong>Teléfono:</strong> ${datos.pacienteTelefono}</p>` : ""}
       ${datos.pacienteEmail ? `<p><strong>Email:</strong> ${datos.pacienteEmail}</p>` : ""}
       ${datos.notas ? `<p><strong>Notas:</strong> ${datos.notas}</p>` : ""}
-      <p>Entra al panel de issifiss para confirmarla. El paciente recibirá un email en cuanto lo hagas.</p>
+      <p>
+        <a href="${enlaceConfirmar}" style="display:inline-block;background:#146A5D;color:#fff;
+           text-decoration:none;font-weight:600;padding:10px 18px;border-radius:10px;">
+          Confirmar cita
+        </a>
+      </p>
+      <p>O entra al panel de issifiss. El paciente recibirá un email en cuanto la confirmes.</p>
     `,
   });
 }
@@ -373,7 +381,7 @@ serve(async (req: Request) => {
         precio: servicio.precio,
         notas: payload.notas ?? null,
       })
-      .select("id, token_cancelacion, fecha_hora_inicio, fecha_hora_fin, estado")
+      .select("id, token_cancelacion, token_confirmacion, fecha_hora_inicio, fecha_hora_fin, estado")
       .single();
 
     if (citaError) {
@@ -396,6 +404,7 @@ serve(async (req: Request) => {
         pacienteEmail: payload.paciente.email,
         inicio,
         notas: payload.notas,
+        tokenConfirmacion: cita.token_confirmacion,
       }),
       payload.paciente.email
         ? notificarSolicitudPaciente({
@@ -408,7 +417,10 @@ serve(async (req: Request) => {
         : Promise.resolve(),
     ]);
 
-    return jsonResponse({ cita }, 201);
+    // "token_confirmacion" es para el enlace del email al fisio — no debe
+    // devolverse en la respuesta pública que recibe el navegador del paciente.
+    const { token_confirmacion: _tokenConfirmacion, ...citaPublica } = cita;
+    return jsonResponse({ cita: citaPublica }, 201);
   } catch (err) {
     console.error(err);
     return jsonResponse({ error: "Error inesperado en el servidor" }, 500);

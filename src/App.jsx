@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Home from "./pages/Home.jsx";
 import Reservar from "./pages/Reservar.jsx";
 import Cancelar from "./pages/Cancelar.jsx";
+import Confirmar from "./pages/Confirmar.jsx";
 import AvisoLegal from "./pages/legal/AvisoLegal.jsx";
 import Privacidad from "./pages/legal/Privacidad.jsx";
 import Terminos from "./pages/legal/Terminos.jsx";
@@ -38,6 +39,7 @@ export default function App() {
         }
       />
       <Route path="/cancelar" element={<Cancelar />} />
+      <Route path="/confirmar" element={<Confirmar />} />
       <Route path="/aviso-legal" element={<AvisoLegal />} />
       <Route path="/privacidad" element={<Privacidad />} />
       <Route path="/terminos" element={<Terminos />} />

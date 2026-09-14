@@ -42,6 +42,8 @@ New query), cada uno completo de una vez:
 4. `supabase/schema_ingresos.sql` — estado de cita `no_asistio` y precio histórico por
    cita (`citas.precio`), para que la pantalla de Ingresos no cambie con efecto
    retroactivo si luego editas el precio de un servicio.
+5. `supabase/schema_confirmar_cita.sql` — columna `citas.token_confirmacion`, para el
+   enlace de confirmación de un clic que recibe el fisio en el email de nueva cita.
 
 Después:
 
@@ -111,6 +113,7 @@ supabase link --project-ref TU_PROJECT_REF
 supabase functions deploy crear-cita
 supabase functions deploy cancelar-cita
 supabase functions deploy notificar-confirmacion
+supabase functions deploy confirmar-cita
 supabase secrets set SUPABASE_SERVICE_ROLE_KEY=tu_service_role_key
 ```
 
@@ -122,6 +125,12 @@ solo debe vivir como secret de las Edge Functions.
 - `cancelar-cita` — busca y cancela una cita por `token_cancelacion`.
 - `notificar-confirmacion` — envía el email de "cita confirmada" cuando el fisio
   confirma una cita desde el panel (comprueba `is_admin()` con el token de quien llama).
+- `confirmar-cita` — busca (GET) y confirma (POST) una cita por `token_confirmacion`,
+  avisando al paciente por email al confirmarla. La usa la página del frontend
+  `/confirmar?token=...` (igual que `/cancelar` usa `cancelar-cita`): el email de
+  nueva solicitud enlaza ahí, no a la función directamente, porque Supabase fuerza
+  `Content-Type: text/plain` en lo que devuelven las Edge Functions y una página HTML
+  servida desde ahí no se renderizaría en el navegador.
 
 ### Notificaciones por email (Resend)
 
@@ -168,9 +177,11 @@ supabase/
   schema_cuentas_clientes.sql          Cuentas de cliente + lista blanca de administradores
   schema_vincular_paciente_existente.sql  Enlazar cuenta nueva con reserva de invitado previa
   schema_ingresos.sql                  Estado "no_asistio" + precio histórico por cita
+  schema_confirmar_cita.sql            Columna token_confirmacion para el enlace de un clic
   functions/crear-cita/                Valida disponibilidad, crea/reutiliza paciente y cita
   functions/cancelar-cita/             Busca y cancela una cita por token
   functions/notificar-confirmacion/    Avisa al paciente cuando el fisio confirma su cita
+  functions/confirmar-cita/            Confirma una cita por token desde el email al fisio
   functions/_shared/                   Helper compartido para enviar emails con Resend
 ```
 
