@@ -4,10 +4,10 @@ import EmptyState from "../ui/EmptyState.jsx";
 import { CalendarX } from "lucide-react";
 import { isPastSlot } from "../../../utils/dateHelpers.js";
 
-export default function TimeSlotPicker({ fecha, duracionMin, value, onChange }) {
+export default function TimeSlotPicker({ fecha, duracionMin, value, onChange, excludeCitaId }) {
   const { slotsForDate, horasOcupadas } = useAppointments();
   const slots = slotsForDate(fecha, duracionMin || 30);
-  const ocupadas = horasOcupadas(fecha);
+  const ocupadas = horasOcupadas(fecha, excludeCitaId);
   const morning = slots.filter((h) => h < "14:00");
   const afternoon = slots.filter((h) => h >= "14:00");
 

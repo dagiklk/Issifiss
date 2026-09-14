@@ -5,7 +5,14 @@ import { CalendarCheck, CalendarPlus, ChevronRight, Search, Sparkles, Users2, Cl
 import { useAuth } from "../../context/AuthContext.jsx";
 import { useAppointments } from "../../context/AppointmentsContext.jsx";
 import { patientFullName } from "../../lib/clinicData.js";
-import { displayNameFromSession, formatLongDate, formatWeekdayShort, greetingForHour, toISODate } from "../../utils/dateHelpers.js";
+import {
+  displayNameFromSession,
+  formatLongDate,
+  formatWeekdayShort,
+  greetingForHour,
+  relativeDayLabel,
+  toISODate,
+} from "../../utils/dateHelpers.js";
 import Avatar from "../../components/admin/ui/Avatar.jsx";
 import StatusBadge from "../../components/admin/ui/StatusBadge.jsx";
 import Card from "../../components/admin/ui/Card.jsx";
@@ -43,7 +50,7 @@ function QuickAction({ icon: Icon, label, onClick }) {
 export default function Panel() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { getByFecha, updateStatus, slotsForDate } = useAppointments();
+  const { citas, getByFecha, updateStatus, slotsForDate } = useAppointments();
   const [openCita, setOpenCita] = useState(null);
 
   const today = toISODate(new Date());
@@ -55,6 +62,20 @@ export default function Panel() {
     [getByFecha, today]
   );
   const next = todays.find((c) => c.horaInicio >= nowHHmm && c.estado !== "completada");
+  const sinCitasHoy = todays.length === 0;
+
+  // Si hoy no hay ninguna cita, buscamos la próxima futura (cualquier día) en
+  // todas las citas, para que desde el inicio se sepa cuándo es sin tener que
+  // entrar a la agenda. Solo se calcula en ese caso: si hoy sí hay citas
+  // (aunque ya hayan pasado todas), el hueco de "sin más citas hoy" se deja
+  // como estaba.
+  const proximaGlobal = useMemo(() => {
+    if (!sinCitasHoy) return null;
+    return citas
+      .filter((c) => !["cancelada", "completada", "no_asistio"].includes(c.estado))
+      .filter((c) => c.fecha > today)
+      .sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio))[0];
+  }, [citas, sinCitasHoy, today]);
   const pacientesHoy = new Set(todays.map((c) => c.pacienteId)).size;
   const slotsHoy = slotsForDate(today, 30).length;
   const libresHoy = Math.max(slotsHoy - todays.length, 0);
@@ -80,7 +101,9 @@ export default function Panel() {
 
       {/* Next appointment */}
       <div className="mt-5 px-4 lg:px-8">
-        <p className="mb-2 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">Tu próxima cita</p>
+        <p className="mb-2 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">
+          {sinCitasHoy && proximaGlobal ? "Hoy no hay citas · tu próxima cita es" : "Tu próxima cita"}
+        </p>
         {next ? (
           <button
             onClick={() => setOpenCita(next)}
@@ -99,12 +122,35 @@ export default function Panel() {
             </div>
             <ChevronRight size={20} className="shrink-0 text-white/50" />
           </button>
+        ) : sinCitasHoy && proximaGlobal ? (
+          <button
+            onClick={() => setOpenCita(proximaGlobal)}
+            className="flex w-full items-center gap-4 rounded-3xl bg-ink p-5 text-left shadow-raised transition-transform duration-150 ease-out active:scale-[0.985]"
+          >
+            <Avatar name={patientFullName(proximaGlobal.paciente)} size="lg" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate text-[17px] font-semibold text-white">{patientFullName(proximaGlobal.paciente)}</p>
+              {proximaGlobal.tratamiento?.nombre && (
+                <p className="mt-0.5 text-[13.5px] text-white/60">{proximaGlobal.tratamiento.nombre}</p>
+              )}
+              <div className="mt-2.5 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-white/10 px-2.5 py-1 text-[12.5px] font-semibold capitalize text-white">
+                  {relativeDayLabel(proximaGlobal.fecha)}
+                </span>
+                <span className="rounded-full bg-white/10 px-2.5 py-1 text-[12.5px] font-semibold tabular-nums text-white">
+                  {proximaGlobal.horaInicio}
+                </span>
+                <StatusBadge status={proximaGlobal.estado} className="bg-white/10 text-white [&>span]:bg-white" />
+              </div>
+            </div>
+            <ChevronRight size={20} className="shrink-0 text-white/50" />
+          </button>
         ) : (
           <Card className="p-5">
             <EmptyState
               icon={CalendarCheck}
-              title="Sin más citas hoy"
-              description="Tu agenda de hoy está completa. Buen trabajo."
+              title={sinCitasHoy ? "Hoy no hay citas" : "Sin más citas hoy"}
+              description={sinCitasHoy ? "No tienes ninguna cita programada todavía." : "Tu agenda de hoy está completa. Buen trabajo."}
               className="py-4"
             />
           </Card>

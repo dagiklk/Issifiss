@@ -29,6 +29,11 @@ export default {
       fontFamily: {
         sans: ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "system-ui", "sans-serif"],
         display: ["Sora", "Inter", "-apple-system", "system-ui", "sans-serif"],
+        // Landing-only editorial/sport type system (Home.jsx). Kept separate
+        // from "display" (Sora, used site-wide) so this redesign doesn't
+        // change headings on Reservar/Cuenta/admin.
+        archivo: ["Archivo", "Inter", "-apple-system", "system-ui", "sans-serif"],
+        archivoBlack: ["Archivo Black", "Archivo", "Inter", "sans-serif"],
       },
       colors: {
         ink: { DEFAULT: "#1D1D1F", soft: "#48484D", muted: "#6E6E73", faint: "#A1A1A6" },
@@ -37,6 +42,13 @@ export default {
         sage: {
           50: "#EFF8F5", 100: "#DCF0EA", 200: "#B7E1D5", 300: "#8ECEBC", 400: "#5FB7A0",
           500: "#2F9C84", 600: "#1E8271", 700: "#146A5D", 800: "#0F544A", 900: "#0B3F39",
+        },
+        // Sampled from src/assets/logo.png (averaged the logo's teal pixels)
+        // so Home.jsx's accent green actually matches the real logo instead
+        // of the generic "sage" scale used site-wide.
+        brand: {
+          50: "#F3F9F8", 100: "#E4F0F0", 200: "#C6E0E0", 300: "#A8D0CF", 400: "#84BDBC",
+          500: "#69AEAD", 600: "#568E8D", 700: "#416B6B", 800: "#304F4E", 900: "#233838",
         },
         amber: { 50: "#FDF6E9", 100: "#FBEACB", 500: "#D89A2B", 600: "#B07B1A" },
         rose: { 50: "#FDEEEE", 100: "#FBDCDC", 500: "#D5615C", 600: "#B84843" },

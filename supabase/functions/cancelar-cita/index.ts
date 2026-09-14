@@ -37,14 +37,21 @@ const supabaseAdmin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY);
 type CitaPublica = {
   id: string;
   fecha_hora_inicio: string;
+  fecha_hora_fin: string;
   estado: string;
-  servicios: { nombre: string } | null;
+  servicio_id: string;
+  servicios: { nombre: string; duracion_minutos: number } | null;
 };
 
+// servicio_id/duracion_minutos se añadieron para que el frontend pueda
+// ofrecer "cambiar fecha u hora" (ver reprogramar-cita) con el selector de
+// horario, que necesita conocer la duración de la sesión — ninguno de los
+// dos es un dato sensible, así que ampliar este select no cambia el modelo
+// de seguridad (el acceso sigue gateado por conocer el token).
 async function buscarCitaPorToken(token: string) {
   return await supabaseAdmin
     .from("citas")
-    .select("id, fecha_hora_inicio, estado, servicios(nombre)")
+    .select("id, fecha_hora_inicio, fecha_hora_fin, estado, servicio_id, servicios(nombre, duracion_minutos)")
     .eq("token_cancelacion", token)
     .maybeSingle<CitaPublica>();
 }
@@ -116,7 +123,7 @@ serve(async (req: Request) => {
         .from("citas")
         .update({ estado: "cancelada" })
         .eq("token_cancelacion", token)
-        .select("id, fecha_hora_inicio, estado, servicios(nombre)")
+        .select("id, fecha_hora_inicio, fecha_hora_fin, estado, servicio_id, servicios(nombre, duracion_minutos)")
         .single<CitaPublica>();
 
       if (updateError || !citaActualizada) {

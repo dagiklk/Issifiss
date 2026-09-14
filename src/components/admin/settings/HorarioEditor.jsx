@@ -4,6 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import Card from "../ui/Card.jsx";
 import Switch from "../ui/Switch.jsx";
 import Button from "../ui/Button.jsx";
+import Sheet from "../ui/Sheet.jsx";
 import { useAppointments } from "../../../context/AppointmentsContext.jsx";
 import { DIAS_SEMANA } from "../../../lib/clinicData.js";
 
@@ -23,6 +24,9 @@ export default function HorarioEditor() {
   const { disponibilidad, loading, guardarFranjasDia } = useAppointments();
   const [dias, setDias] = useState(null);
   const [guardando, setGuardando] = useState(null);
+  // Confirmación como bottom sheet propio de la app (igual que al eliminar un
+  // servicio), en vez de quitar la franja al primer toque.
+  const [franjaAEliminar, setFranjaAEliminar] = useState(null);
 
   // Seed local editable state once the real schedule has loaded. After that,
   // edits live only here until explicitly saved, so saving one day doesn't
@@ -65,6 +69,12 @@ export default function HorarioEditor() {
   function quitarFranja(dow, index) {
     const dia = dias.find((d) => d.dow === dow);
     actualizarDia(dow, { franjas: dia.franjas.filter((_, i) => i !== index) });
+  }
+
+  function confirmarQuitarFranja() {
+    if (!franjaAEliminar) return;
+    quitarFranja(franjaAEliminar.dow, franjaAEliminar.index);
+    setFranjaAEliminar(null);
   }
 
   async function guardarDia(dow) {
@@ -116,7 +126,7 @@ export default function HorarioEditor() {
                     />
                     <button
                       type="button"
-                      onClick={() => quitarFranja(d.dow, i)}
+                      onClick={() => setFranjaAEliminar({ dow: d.dow, index: i, horaInicio: f.horaInicio, horaFin: f.horaFin })}
                       className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-faint hover:bg-canvas-sunken hover:text-rose-600"
                       aria-label="Quitar franja"
                     >
@@ -140,6 +150,31 @@ export default function HorarioEditor() {
           </Card>
         );
       })}
+
+      <Sheet
+        open={!!franjaAEliminar}
+        onOpenChange={(v) => !v && setFranjaAEliminar(null)}
+        title="Quitar franja"
+        description={
+          franjaAEliminar
+            ? `${DIAS_SEMANA[franjaAEliminar.dow]} · ${franjaAEliminar.horaInicio} – ${franjaAEliminar.horaFin}`
+            : ""
+        }
+        footer={
+          <div className="flex gap-2.5">
+            <Button variant="secondary" block onClick={() => setFranjaAEliminar(null)}>
+              Cancelar
+            </Button>
+            <Button variant="danger" block onClick={confirmarQuitarFranja}>
+              Quitar
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-[13.5px] text-ink-muted">
+          Se quitará este horario de la franja. Recuerda pulsar "Guardar" para confirmar el cambio.
+        </p>
+      </Sheet>
     </div>
   );
 }

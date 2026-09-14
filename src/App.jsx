@@ -19,15 +19,24 @@ import ClienteRegistro from "./pages/cliente/Registro.jsx";
 import MiCuenta from "./pages/cliente/MiCuenta.jsx";
 import RecuperarPassword from "./pages/cliente/RecuperarPassword.jsx";
 import RestablecerPassword from "./pages/cliente/RestablecerPassword.jsx";
+import NotFound from "./pages/NotFound.jsx";
 import ProtectedRoute from "./routes/ProtectedRoute.jsx";
 import ClientProtectedRoute from "./routes/ClientProtectedRoute.jsx";
+import RedirectIfAdmin from "./routes/RedirectIfAdmin.jsx";
 import AdminShell from "./components/admin/layout/AdminShell.jsx";
 
 export default function App() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      <Route path="/reservar" element={<Reservar />} />
+      <Route
+        path="/reservar"
+        element={
+          <RedirectIfAdmin>
+            <Reservar />
+          </RedirectIfAdmin>
+        }
+      />
       <Route path="/cancelar" element={<Cancelar />} />
       <Route path="/aviso-legal" element={<AvisoLegal />} />
       <Route path="/privacidad" element={<Privacidad />} />
@@ -66,6 +75,8 @@ export default function App() {
         {/* Compatibilidad con el enlace anterior del panel */}
         <Route path="/admin/panel" element={<Panel />} />
       </Route>
+
+      <Route path="*" element={<NotFound />} />
     </Routes>
   );
 }

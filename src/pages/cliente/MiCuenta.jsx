@@ -34,8 +34,8 @@ function CitaRow({ cita, cancelable }) {
       <div className="flex shrink-0 items-center gap-2.5">
         <StatusBadge status={cita.estado} />
         {cancelable && (
-          <Link to={`/cancelar?token=${cita.token_cancelacion}`} className="text-[12.5px] font-medium text-rose-600 underline underline-offset-2">
-            Cancelar
+          <Link to={`/cancelar?token=${cita.token_cancelacion}`} className="text-[12.5px] font-medium text-sage-700 underline underline-offset-2">
+            Cambiar / cancelar
           </Link>
         )}
       </div>

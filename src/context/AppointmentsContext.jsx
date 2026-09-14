@@ -224,6 +224,40 @@ export function AppointmentsProvider({ children }) {
     [servicios, crearPaciente]
   );
 
+  const reprogramarCita = useCallback(
+    async (citaId, { fecha, horaInicio }) => {
+      const cita = citas.find((c) => c.id === citaId);
+      if (!cita) throw new Error("La cita no existe.");
+      const servicio = servicios.find((s) => s.id === cita.servicioId) || cita.tratamiento;
+      const duracionMin = servicio?.duracionMin || 30;
+
+      const inicio = zonedTimeToUtc(fecha, horaInicio);
+      const fin = new Date(inicio.getTime() + duracionMin * 60000);
+      // Reprogramar desde el panel es una decisión del fisio: se mantiene el
+      // estado actual (si estaba confirmada, sigue confirmada) a diferencia
+      // de reprogramar-cita (el cliente sí vuelve a pendiente de confirmar).
+      const { data, error } = await supabase
+        .from("citas")
+        .update({ fecha_hora_inicio: inicio.toISOString(), fecha_hora_fin: fin.toISOString() })
+        .eq("id", citaId)
+        .select(CITA_SELECT)
+        .single();
+
+      if (error) {
+        if (error.code === "23P01") throw new Error("Ese horario ya no está disponible.");
+        throw error;
+      }
+      const actualizada = toUiCita(data);
+      setCitas((prev) =>
+        prev
+          .map((c) => (c.id === citaId ? actualizada : c))
+          .sort((a, b) => (a.fecha + a.horaInicio).localeCompare(b.fecha + b.horaInicio))
+      );
+      return actualizada;
+    },
+    [citas, servicios]
+  );
+
   function getByFecha(fechaISO) {
     return citas.filter((c) => c.fecha === fechaISO);
   }
@@ -240,14 +274,18 @@ export function AppointmentsProvider({ children }) {
   function getUltima(pacienteId, beforeISO = format(new Date(), "yyyy-MM-dd")) {
     return getByPaciente(pacienteId).find((c) => c.fecha <= beforeISO && c.estado === "completada");
   }
-  function horasOcupadas(fechaISO) {
-    return new Set(getByFecha(fechaISO).filter((c) => c.estado !== "cancelada").map((c) => c.horaInicio));
+  function horasOcupadas(fechaISO, excludeCitaId = null) {
+    return new Set(
+      getByFecha(fechaISO)
+        .filter((c) => c.estado !== "cancelada" && c.id !== excludeCitaId)
+        .map((c) => c.horaInicio)
+    );
   }
   function slotsForDate(fechaISO, duracionMin = 30) {
     return slotsForDia(disponibilidad, diaSemanaFromISO(fechaISO), duracionMin);
   }
-  function horasLibres(fechaISO, duracionMin = 30) {
-    const ocupadas = horasOcupadas(fechaISO);
+  function horasLibres(fechaISO, duracionMin = 30, excludeCitaId = null) {
+    const ocupadas = horasOcupadas(fechaISO, excludeCitaId);
     return slotsForDate(fechaISO, duracionMin).filter((h) => !ocupadas.has(h));
   }
 
@@ -262,6 +300,7 @@ export function AppointmentsProvider({ children }) {
       updateStatus,
       updateNotas,
       crearCita,
+      reprogramarCita,
       crearPaciente,
       actualizarNotasPaciente,
       guardarFranjasDia,
@@ -284,6 +323,7 @@ export function AppointmentsProvider({ children }) {
       updateStatus,
       updateNotas,
       crearCita,
+      reprogramarCita,
       crearPaciente,
       actualizarNotasPaciente,
       guardarFranjasDia,

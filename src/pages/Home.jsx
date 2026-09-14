@@ -6,6 +6,7 @@ import {
   Presentation,
   History,
   GraduationCap,
+  Dumbbell,
   Stethoscope,
   Check,
   ArrowRight,
@@ -16,7 +17,6 @@ import {
 import { supabase } from "../lib/supabaseClient";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
-import ServicioCard from "../components/ServicioCard.jsx";
 import Button from "../components/admin/ui/Button.jsx";
 import ecoConsulta from "../assets/ecografia/eco-consulta.jpg";
 import ecoVascular from "../assets/ecografia/eco-vascular.jpg";
@@ -33,7 +33,7 @@ const VENTAJAS = [
 ];
 
 const TRUST_STRIP = [
-  { icon: CalendarCheck2, texto: "Confirmación inmediata por email" },
+  { icon: CalendarCheck2, texto: "Confirmación por email" },
   { icon: ShieldCheck, texto: "Cambia o cancela online" },
   { icon: Stethoscope, texto: "Ecógrafo incluido, sin coste extra" },
 ];
@@ -89,16 +89,18 @@ const staggerItem = {
   show: { opacity: 1, y: 0, transition: { duration: 0.45, ease: EASE } },
 };
 
-// Etiqueta reutilizada como "eyebrow" editorial encima de cada titular de
-// sección — la misma pastilla sage-50 en todas partes da consistencia visual
-// sin depender de color adicional.
-function Eyebrow({ children, dark }) {
+// Etiqueta "eyebrow" editorial encima de cada titular de sección. "solid" es
+// la variante sólida en negro usada solo en el hero (más peso visual que la
+// pastilla brand-50 del resto de secciones).
+function Eyebrow({ children, dark, solid }) {
   return (
     <span
       className={
-        dark
-          ? "inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[12px] font-medium text-sage-300"
-          : "inline-flex items-center rounded-full bg-sage-50 px-3 py-1 text-[12px] font-medium text-sage-700"
+        solid
+          ? "inline-flex items-center gap-1.5 rounded-lg bg-ink px-3 py-2 text-[10.5px] font-bold uppercase tracking-[0.12em] text-white"
+          : dark
+          ? "inline-flex items-center rounded-full bg-white/10 px-3 py-1 text-[12px] font-medium text-brand-300"
+          : "inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-[12px] font-medium text-brand-700"
       }
     >
       {children}
@@ -110,7 +112,10 @@ function Eyebrow({ children, dark }) {
 // secciones para dar sensación de profundidad sin recurrir a gradientes
 // llamativos: un único color a muy baja opacidad y mucho blur.
 function GlowOrb({ className }) {
-  return <div aria-hidden className={`pointer-events-none absolute rounded-full blur-3xl ${className}`} />;
+  // "-z-10": position:absolute por sí solo ya pinta por encima de cualquier
+  // contenido estático del mismo section (así sea, precede en el DOM), así
+  // que sin esto el halo tapaba el titular en vez de quedar detrás.
+  return <div aria-hidden className={`pointer-events-none absolute -z-10 rounded-full blur-3xl ${className}`} />;
 }
 
 export default function Home() {
@@ -147,10 +152,8 @@ export default function Home() {
 
       {/* ================= HERO ================= */}
       <section ref={heroRef} className="relative overflow-hidden">
-        {/* Malla de fondo: dos manchas de color muy suaves y difuminadas, en vez
-            de un gradiente plano — es lo que da el aire "2026" sin ser ruidoso. */}
-        <GlowOrb className="-left-24 -top-32 h-[420px] w-[420px] bg-sage-200/40" />
-        <GlowOrb className="-right-32 top-10 h-[380px] w-[380px] bg-sage-100/70" />
+        <GlowOrb className="-left-24 -top-32 h-[420px] w-[420px] bg-brand-200/40" />
+        <GlowOrb className="-right-32 top-10 h-[380px] w-[380px] bg-brand-100/70" />
         {/*
           Orden deliberado de los 3 bloques (título, foto, botones) por DOM,
           no por className: en móvil (grid-cols-1) se apilan tal cual en ese
@@ -165,12 +168,8 @@ export default function Home() {
           "src" → el navegador no la vuelve a descargar): una en el flujo de
           la columna izquierda, visible solo <lg y colocada entre el
           subtítulo y los botones; otra como columna derecha, visible solo
-          en lg+. Antes la foto era un único elemento con "lg:row-span-2" en
-          esta grid, y eso obligaba a la fila de los botones a heredar la
-          altura de la foto (mucho más alta que el texto), dejando un hueco
-          vacío enorme entre el subtítulo y los botones en portátil. Con dos
-          columnas simples (sin row-span) cada una mide solo lo que su
-          propio contenido necesita.
+          en lg+. Con dos columnas simples (sin row-span) cada una mide solo
+          lo que su propio contenido necesita.
         */}
         <div className="mx-auto grid max-w-5xl grid-cols-1 items-start gap-6 px-4 pb-8 pt-8 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:gap-10 lg:px-8 lg:pb-16 lg:pt-14">
           <div className="flex flex-col gap-6">
@@ -179,13 +178,17 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.7, ease: EASE }}
             >
-              <Eyebrow>Fisioterapia deportiva y rehabilitación</Eyebrow>
-              <h1 className="mt-4 font-display text-[32px] font-semibold leading-[1.08] tracking-display text-ink sm:text-[40px] lg:text-[44px]">
-                Recupera tu <span className="text-sage-600">movimiento</span>, a tu ritmo.
+              <Eyebrow solid>
+                <Dumbbell size={13} strokeWidth={2.4} />
+                Fisioterapia deportiva y rehabilitación
+              </Eyebrow>
+              <h1 className="mt-5 font-archivoBlack text-[42px] font-normal uppercase leading-[0.92] tracking-[-0.02em] text-ink sm:text-[54px] lg:text-[62px]">
+                Recupera tu
+                <br />
+                <span className="text-brand-600">movimiento</span>
               </h1>
               <p className="mt-4 max-w-md text-[15.5px] leading-relaxed text-ink-muted">
-                Sesiones personalizadas con ecografía diagnóstica incluida en consulta. Reserva
-                online en menos de un minuto.
+                Reserva online en menos de un minuto.
               </p>
             </motion.div>
 
@@ -198,12 +201,12 @@ export default function Home() {
             >
               <div
                 aria-hidden
-                className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-sage-200/50 blur-2xl"
+                className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-brand-200/50 blur-2xl"
               />
               <img
                 src={isaacPerfil}
                 alt="Isaac Rodríguez, fisioterapeuta"
-                className="aspect-[4/5] w-full rounded-[24px] object-cover object-top shadow-raised"
+                className="aspect-[4/5] w-full rounded-[24px] border-2 border-ink object-cover object-top shadow-raised"
               />
             </motion.div>
 
@@ -213,12 +216,12 @@ export default function Home() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.6, ease: EASE, delay: 0.2 }}
             >
-              <Button as={Link} to="/reservar" variant="accent" size="md">
-                Reservar cita
-                <ArrowRight size={16} strokeWidth={2.2} />
+              <Button as={Link} to="/reservar" variant="primary" size="md">
+                <span className="text-[12.5px] font-bold uppercase tracking-[0.08em]">Reservar cita</span>
+                <ArrowRight size={16} strokeWidth={2.4} />
               </Button>
               <Button as="a" href="#servicios" variant="secondary" size="md">
-                Ver servicios
+                <span className="text-[12.5px] font-bold uppercase tracking-[0.08em]">Ver servicios</span>
               </Button>
             </motion.div>
           </div>
@@ -232,51 +235,56 @@ export default function Home() {
             style={{ y: heroImgY }}
           >
             <div className="relative">
-              {/* Resplandor difuminado justo detrás de la imagen: efecto de
-                  "glow" sutil, coherente con el resto de la malla de fondo. */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-sage-200/50 blur-2xl"
+                className="pointer-events-none absolute -inset-6 -z-10 rounded-[40px] bg-brand-200/50 blur-2xl"
               />
               <img
                 src={isaacPerfil}
                 alt="Isaac Rodríguez, fisioterapeuta"
-                className="aspect-[4/5] w-full rounded-[24px] object-cover object-top shadow-raised"
+                className="aspect-[4/5] w-full rounded-[24px] border-2 border-ink object-cover object-top shadow-raised"
               />
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, ease: EASE, delay: 0.5 }}
-                className="absolute -bottom-4 left-5 flex w-64 items-center gap-3 rounded-2xl border border-white/60 bg-white/80 p-3 shadow-soft backdrop-blur-md"
+                className="absolute -bottom-4 left-5 flex w-64 items-center gap-3 rounded-2xl border-2 border-ink bg-white p-3 shadow-raised"
               >
-                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-sage-50 text-sage-700">
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-ink text-white">
                   <GraduationCap size={16} strokeWidth={2} />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[13px] font-semibold text-ink">Isaac Rodríguez</p>
-                  <p className="truncate text-[11.5px] text-ink-muted">Fisioterapeuta titulado, UFV</p>
+                  <p className="text-[13px] font-bold text-ink">Isaac Rodríguez</p>
+                  <p className="truncate text-[11.5px] font-medium uppercase tracking-[0.04em] text-ink-muted">
+                    Fisioterapeuta titulado, UFV
+                  </p>
                 </div>
               </motion.div>
               <motion.div
                 initial={{ opacity: 0, y: -8, x: 8 }}
                 animate={{ opacity: 1, y: 0, x: 0 }}
                 transition={{ duration: 0.6, ease: EASE, delay: 0.7 }}
-                className="absolute -top-4 -right-3 flex items-center gap-2 rounded-2xl border border-white/60 bg-white/80 px-3.5 py-2.5 shadow-soft backdrop-blur-md"
+                className="absolute -top-4 -right-3 flex items-center gap-2 rounded-2xl border-2 border-ink bg-brand-600 px-3.5 py-2.5 shadow-raised"
               >
-                <Check size={15} strokeWidth={2.6} className="text-sage-600" />
-                <p className="whitespace-nowrap text-[12px] font-semibold text-ink">Cita en &lt;1 min</p>
+                <Check size={15} strokeWidth={2.8} className="text-white" />
+                <p className="whitespace-nowrap text-[11.5px] font-bold uppercase tracking-[0.04em] text-white">
+                  Cita en &lt;1 min
+                </p>
               </motion.div>
             </div>
           </motion.div>
         </div>
 
         {/* Franja de confianza: cierra el hero con hechos concretos, sin relleno */}
-        <div className="relative border-y border-line bg-white/60 backdrop-blur-sm">
+        <div className="relative border-y-2 border-ink bg-white/60 backdrop-blur-sm">
           <div className="mx-auto max-w-5xl px-4 py-4 lg:px-8">
-            <div className="flex flex-col gap-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:gap-x-9 sm:gap-y-2">
+            <div className="flex flex-col divide-y divide-ink/10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:divide-x sm:divide-y-0">
               {TRUST_STRIP.map(({ icon: Icon, texto }) => (
-                <div key={texto} className="flex items-center gap-2 text-[13px] font-medium text-ink-soft">
-                  <Icon size={14} strokeWidth={2.1} className="shrink-0 text-sage-600" />
+                <div
+                  key={texto}
+                  className="flex items-center gap-2 py-2 text-[12px] font-bold uppercase tracking-[0.03em] text-ink sm:px-6 sm:py-0"
+                >
+                  <Icon size={14} strokeWidth={2.2} className="shrink-0 text-brand-600" />
                   {texto}
                 </div>
               ))}
@@ -286,12 +294,12 @@ export default function Home() {
       </section>
 
       {/* ================= CÓMO FUNCIONA ================= */}
-      <section className="relative overflow-hidden border-y border-line bg-canvas-sunken/60">
-        <GlowOrb className="left-1/2 top-0 h-[360px] w-[600px] -translate-x-1/2 bg-sage-100/60" />
+      <section className="relative overflow-hidden border-b-2 border-ink bg-canvas-sunken/60">
+        <GlowOrb className="left-1/2 top-0 h-[360px] w-[600px] -translate-x-1/2 bg-brand-100/60" />
         <div className="relative mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
           <Reveal className="mx-auto mb-10 max-w-xl text-center">
             <Eyebrow>Cómo funciona</Eyebrow>
-            <h2 className="mt-3 font-display text-[23px] font-semibold tracking-display text-ink sm:text-[27px]">
+            <h2 className="mt-3 font-archivoBlack text-[26px] font-normal uppercase tracking-[-0.01em] text-ink sm:text-[32px]">
               De la reserva al alivio, en tres pasos
             </h2>
           </Reveal>
@@ -305,22 +313,22 @@ export default function Home() {
           >
             {PASOS.map(({ numero, icon: Icon, titulo, texto }, i) => (
               <motion.div key={numero} variants={staggerItem} className="relative">
-                <div className="flex h-full flex-col gap-3.5 rounded-3xl border border-line bg-white/90 p-5 shadow-softer backdrop-blur-sm transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-soft">
+                <div className="flex h-full flex-col gap-3.5 rounded-2xl border-2 border-ink bg-white p-5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-raised">
                   <div className="flex items-center justify-between">
-                    <span className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sage-50 text-sage-700">
+                    <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
                       <Icon size={18} strokeWidth={1.9} />
                     </span>
-                    <span className="font-display text-[22px] font-semibold text-line-strong">{numero}</span>
+                    <span className="font-archivoBlack text-[28px] font-normal leading-none text-ink/15">{numero}</span>
                   </div>
                   <div>
-                    <h3 className="text-[15px] font-semibold text-ink">{titulo}</h3>
+                    <h3 className="text-[15px] font-bold text-ink">{titulo}</h3>
                     <p className="mt-1.5 text-[13px] leading-relaxed text-ink-muted">{texto}</p>
                   </div>
                 </div>
                 {i < PASOS.length - 1 && (
                   <div
                     aria-hidden
-                    className="absolute top-1/2 -right-5 hidden h-px w-5 -translate-y-1/2 bg-line-strong sm:block"
+                    className="absolute top-1/2 -right-5 hidden h-px w-5 -translate-y-1/2 bg-ink/20 sm:block"
                   />
                 )}
               </motion.div>
@@ -333,7 +341,7 @@ export default function Home() {
       <section id="servicios" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-14 lg:px-8 lg:py-20">
         <Reveal className="mx-auto mb-8 max-w-xl text-center lg:mb-10">
           <Eyebrow>Servicios</Eyebrow>
-          <h2 className="mt-3 font-display text-[23px] font-semibold tracking-display text-ink sm:text-[27px]">
+          <h2 className="mt-3 font-archivoBlack text-[26px] font-normal uppercase tracking-[-0.01em] text-ink sm:text-[32px]">
             Elige tu sesión
           </h2>
           <p className="mt-2.5 text-[13.5px] text-ink-muted">Resérvala en menos de un minuto, sin llamadas.</p>
@@ -345,15 +353,41 @@ export default function Home() {
           whileInView="show"
           viewport={{ once: true, amount: 0.15 }}
         >
-          {servicios.map((servicio) => (
-            <motion.div key={servicio.id} variants={staggerItem}>
-              <ServicioCard
-                servicio={servicio}
-                destacado={servicio.nombre?.trim().toLowerCase().startsWith(SERVICIO_DESTACADO)}
-                onSelect={() => navigate("/reservar", { state: { servicioId: servicio.id } })}
-              />
-            </motion.div>
-          ))}
+          {servicios.map((servicio) => {
+            const destacado = servicio.nombre?.trim().toLowerCase().startsWith(SERVICIO_DESTACADO);
+            return (
+              <motion.button
+                key={servicio.id}
+                type="button"
+                variants={staggerItem}
+                onClick={() => navigate("/reservar", { state: { servicioId: servicio.id } })}
+                className={
+                  "group relative flex flex-col gap-2 rounded-2xl border-2 bg-white p-5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-raised active:scale-[0.985] " +
+                  (destacado ? "border-brand-500 hover:border-brand-600" : "border-ink/12 hover:border-ink")
+                }
+              >
+                {destacado && (
+                  <span className="absolute -top-2.5 left-4 rounded-md bg-brand-600 px-2.5 py-1 text-[10px] font-bold uppercase tracking-[0.08em] text-white">
+                    Recomendada
+                  </span>
+                )}
+                <h3 className="text-[16px] font-bold text-ink">{servicio.nombre}</h3>
+                {servicio.descripcion && (
+                  <p className="text-[13px] leading-relaxed text-ink-muted">{servicio.descripcion}</p>
+                )}
+                <div className="mt-2 flex items-baseline justify-between border-t border-ink/10 pt-3">
+                  {servicio.precio != null && (
+                    <span className="font-archivoBlack text-[22px] font-normal tabular-nums text-ink">
+                      {Number(servicio.precio).toFixed(0)} €
+                    </span>
+                  )}
+                  <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-faint">
+                    {servicio.duracion_minutos} min
+                  </span>
+                </div>
+              </motion.button>
+            );
+          })}
           {servicios.length === 0 && (
             <p className="col-span-full py-6 text-center text-[13.5px] text-ink-faint">
               Todavía no hay servicios configurados. Añádelos en la tabla "servicios" de Supabase.
@@ -362,17 +396,17 @@ export default function Home() {
         </motion.div>
         {servicios.length > 0 && (
           <Reveal className="mt-7 flex justify-center">
-            <Button as={Link} to="/reservar" variant="accent">
-              Ver horarios disponibles
+            <Button as={Link} to="/reservar" variant="primary">
+              <span className="text-[12.5px] font-bold uppercase tracking-[0.08em]">Ver horarios disponibles</span>
             </Button>
           </Reveal>
         )}
       </section>
 
       {/* ================= ECOGRAFÍA (a pantalla completa) ================= */}
-      <section className="relative overflow-hidden border-y border-line bg-ink">
-        <GlowOrb className="-left-20 top-1/3 h-[420px] w-[420px] bg-sage-500/10" />
-        <GlowOrb className="right-0 -bottom-20 h-[320px] w-[320px] bg-sage-400/10" />
+      <section className="relative overflow-hidden border-y-2 border-ink bg-ink">
+        <GlowOrb className="-left-20 top-1/3 h-[420px] w-[420px] bg-brand-500/10" />
+        <GlowOrb className="right-0 -bottom-20 h-[320px] w-[320px] bg-brand-400/10" />
         <div className="relative mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 px-4 py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-20">
           <Reveal className="grid grid-cols-2 gap-3 lg:order-2">
             <img
@@ -390,7 +424,7 @@ export default function Home() {
           <div className="lg:order-1">
             <Reveal>
               <Eyebrow dark>Diagnóstico por imagen</Eyebrow>
-              <h2 className="mb-3 mt-3 font-display text-[23px] font-semibold tracking-display text-white sm:text-[27px]">
+              <h2 className="mb-3 mt-3 font-archivoBlack text-[26px] font-normal uppercase leading-[1] tracking-[-0.01em] text-white sm:text-[32px]">
                 Ecografía musculoesquelética en la misma consulta
               </h2>
               <p className="max-w-md text-[14px] leading-relaxed text-white/60">
@@ -407,11 +441,11 @@ export default function Home() {
             >
               {VENTAJAS.map(({ icon: Icon, titulo, texto }) => (
                 <motion.li key={titulo} variants={staggerItem} className="flex items-start gap-3">
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-sage-300">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/10 text-brand-300">
                     <Icon size={15} strokeWidth={1.9} />
                   </span>
                   <div>
-                    <p className="text-[13.5px] font-semibold text-white">{titulo}</p>
+                    <p className="text-[13.5px] font-bold text-white">{titulo}</p>
                     <p className="text-[12.5px] text-white/55">{texto}</p>
                   </div>
                 </motion.li>
@@ -419,7 +453,9 @@ export default function Home() {
             </motion.ul>
             <Reveal delay={0.15}>
               <Button as={Link} to="/reservar" variant="invert" className="mt-7">
-                Reservar valoración con ecografía
+                <span className="text-[12.5px] font-bold uppercase tracking-[0.08em]">
+                  Reservar valoración con ecografía
+                </span>
               </Button>
             </Reveal>
           </div>
@@ -428,21 +464,21 @@ export default function Home() {
 
       {/* ================= CTA FINAL ================= */}
       <Reveal className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20" y={24}>
-        <div className="relative overflow-hidden rounded-[28px] bg-sage-700 px-6 py-11 text-center shadow-raised sm:px-10 lg:py-16">
+        <div className="relative overflow-hidden rounded-[28px] border-2 border-ink bg-brand-700 px-6 py-11 text-center shadow-raised sm:px-10 lg:py-16">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,255,255,0.12),transparent_70%)]"
           />
           <GlowOrb className="-left-10 -bottom-16 h-56 w-56 bg-white/10" />
-          <h2 className="relative mx-auto max-w-lg font-display text-[26px] font-semibold leading-[1.12] tracking-display text-white sm:text-[32px]">
+          <h2 className="relative mx-auto max-w-lg font-archivoBlack text-[30px] font-normal uppercase leading-[0.98] tracking-[-0.02em] text-white sm:text-[38px]">
             ¿Listo para moverte mejor?
           </h2>
-          <p className="relative mx-auto mt-2.5 max-w-sm text-[14px] text-sage-50">
+          <p className="relative mx-auto mt-2.5 max-w-sm text-[14px] text-brand-50">
             Reserva tu cita en menos de un minuto, sin llamadas ni esperas.
           </p>
           <Button as={Link} to="/reservar" variant="invert" size="lg" className="relative mt-7">
-            Reservar cita
-            <ArrowRight size={16} strokeWidth={2.2} />
+            <span className="text-[13px] font-bold uppercase tracking-[0.08em]">Reservar cita</span>
+            <ArrowRight size={16} strokeWidth={2.4} />
           </Button>
         </div>
       </Reveal>

@@ -4,6 +4,7 @@ import { Plus, Trash2 } from "lucide-react";
 import Card from "../ui/Card.jsx";
 import Switch from "../ui/Switch.jsx";
 import Button from "../ui/Button.jsx";
+import Sheet from "../ui/Sheet.jsx";
 import { supabase } from "../../../lib/supabaseClient.js";
 
 const inputClass =
@@ -17,6 +18,9 @@ export default function ServiciosEditor() {
   const [servicios, setServicios] = useState(null);
   const [nuevos, setNuevos] = useState([]);
   const [guardando, setGuardando] = useState(null);
+  // Confirmación de borrado como bottom sheet propio de la app, en vez del
+  // window.confirm() del navegador (rompía la sensación de app nativa).
+  const [servicioAEliminar, setServicioAEliminar] = useState(null);
 
   useEffect(() => {
     let active = true;
@@ -80,11 +84,10 @@ export default function ServiciosEditor() {
     }
   }
 
-  async function eliminarExistente(servicio) {
-    const confirmado = window.confirm(
-      `¿Eliminar "${servicio.nombre}"? Esta acción no se puede deshacer.`
-    );
-    if (!confirmado) return;
+  async function confirmarEliminacion() {
+    const servicio = servicioAEliminar;
+    if (!servicio) return;
+    setServicioAEliminar(null);
 
     setGuardando(servicio.id);
     try {
@@ -158,7 +161,7 @@ export default function ServiciosEditor() {
             <Switch checked={s.activo} onChange={(v) => actualizarCampo(s.id, "activo", v)} label={`Activo ${s.nombre}`} />
             <button
               type="button"
-              onClick={() => eliminarExistente(s)}
+              onClick={() => setServicioAEliminar(s)}
               disabled={guardando === s.id}
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-ink-faint hover:bg-rose-50 hover:text-rose-600 disabled:opacity-40"
               aria-label={`Eliminar ${s.nombre}`}
@@ -274,6 +277,25 @@ export default function ServiciosEditor() {
       >
         <Plus size={15} strokeWidth={2} /> Añadir servicio
       </button>
+
+      <Sheet
+        open={!!servicioAEliminar}
+        onOpenChange={(v) => !v && setServicioAEliminar(null)}
+        title="Eliminar servicio"
+        description={servicioAEliminar ? `«${servicioAEliminar.nombre}» se eliminará permanentemente.` : ""}
+        footer={
+          <div className="flex gap-2.5">
+            <Button variant="secondary" block onClick={() => setServicioAEliminar(null)}>
+              Cancelar
+            </Button>
+            <Button variant="danger" block onClick={confirmarEliminacion}>
+              Eliminar
+            </Button>
+          </div>
+        }
+      >
+        <p className="text-[13.5px] text-ink-muted">Esta acción no se puede deshacer.</p>
+      </Sheet>
     </div>
   );
 }
