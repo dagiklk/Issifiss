@@ -3,7 +3,7 @@ import clsx from "clsx";
 import { supabase } from "../lib/supabaseClient";
 import { isPastSlot } from "../utils/dateHelpers.js";
 
-// Genera los slots de "hora_inicio" a "hora_fin" en intervalos de "duracionMin". 
+// Genera los slots de "hora_inicio" a "hora_fin" en intervalos de "duracionMin".. 
 function generarSlots(horaInicio, horaFin, duracionMin) {
   const slots = [];
   const [hIni, mIni] = horaInicio.split(":").map(Number);
