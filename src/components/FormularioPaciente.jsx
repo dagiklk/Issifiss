@@ -13,9 +13,15 @@ export default function FormularioPaciente({ datos, onChange, onSubmit, enviando
     if (!datos.email?.trim() && !datos.telefono?.trim()) {
       nuevosErrores.contacto = "Indica un email o un teléfono de contacto";
     }
-    if (pedirPassword) {
+    // "pedirPassword" ofrece el campo, no lo obliga: Reservar.jsx ya trata la
+    // contraseña como opcional (solo intenta crear cuenta si se rellenó, ver
+    // confirmarReserva). Antes esto exigía contraseña SIEMPRE que se
+    // mostraba el campo (cualquier invitado no logueado), así que en la
+    // práctica era imposible reservar sin crear una cuenta — bug real
+    // encontrado probando el flujo como cliente.
+    if (pedirPassword && datos.password) {
       if (!datos.email?.trim()) nuevosErrores.email = "El email es obligatorio para crear tu cuenta";
-      if (!datos.password || datos.password.length < 6) {
+      if (datos.password.length < 6) {
         nuevosErrores.password = "La contraseña debe tener al menos 6 caracteres";
       }
     }

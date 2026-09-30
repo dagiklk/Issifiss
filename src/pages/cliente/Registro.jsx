@@ -14,7 +14,7 @@ const inputClass =
 export default function ClienteRegistro() {
   const { signUp } = useAuth();
   const navigate = useNavigate();
-  const [datos, setDatos] = useState({ nombre: "", email: "", telefono: "", password: "" });
+  const [datos, setDatos] = useState({ nombre: "", email: "", telefono: "", password: "", confirmarPassword: "" });
   const [consentimiento, setConsentimiento] = useState(false);
   const [errores, setErrores] = useState({});
   const [cargando, setCargando] = useState(false);
@@ -29,6 +29,7 @@ export default function ClienteRegistro() {
     if (!datos.nombre.trim()) nuevos.nombre = "Introduce tu nombre";
     if (!datos.email.trim()) nuevos.email = "Introduce tu email";
     if (!datos.password || datos.password.length < 6) nuevos.password = "La contraseña debe tener al menos 6 caracteres";
+    else if (datos.password !== datos.confirmarPassword) nuevos.confirmarPassword = "Las contraseñas no coinciden";
     if (!consentimiento) nuevos.consentimiento = "Debes aceptar el tratamiento de tus datos para continuar";
     setErrores(nuevos);
     return Object.keys(nuevos).length === 0;
@@ -51,8 +52,13 @@ export default function ClienteRegistro() {
       } else {
         setConfirmacionPendiente(true);
       }
-    } catch (err) {
-      setErrores({ general: err.message || "No se pudo crear la cuenta" });
+    } catch {
+      // Mensaje genérico a propósito: Supabase devuelve "User already
+      // registered" tal cual cuando el email ya existe, y mostrarlo permite
+      // enumerar qué emails están registrados (aquí, además, confirmaría que
+      // alguien es paciente de la clínica — un dato sensible en sí mismo).
+      // El mismo texto vale para cualquier otro fallo del registro.
+      setErrores({ general: "No se pudo completar el registro. Comprueba tus datos e inténtalo de nuevo, o inicia sesión si ya tienes cuenta." });
     } finally {
       setCargando(false);
     }
@@ -132,6 +138,17 @@ export default function ClienteRegistro() {
                 placeholder="Mínimo 6 caracteres"
               />
               {errores.password && <p className="mt-1.5 text-[12.5px] text-rose-600">{errores.password}</p>}
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Confirmar contraseña</label>
+              <input
+                className={inputClass}
+                type="password"
+                value={datos.confirmarPassword}
+                onChange={(e) => actualizar("confirmarPassword", e.target.value)}
+                placeholder="Repite la contraseña"
+              />
+              {errores.confirmarPassword && <p className="mt-1.5 text-[12.5px] text-rose-600">{errores.confirmarPassword}</p>}
             </div>
 
             <div>

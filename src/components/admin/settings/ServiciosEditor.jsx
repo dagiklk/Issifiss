@@ -151,14 +151,22 @@ export default function ServiciosEditor() {
     <div className="flex flex-col gap-3">
       {servicios.map((s) => (
         <Card key={s.id} className="p-4">
-          <div className="flex items-center justify-between gap-3">
-            <input
-              className={`${inputClass} font-medium`}
-              value={s.nombre}
-              onChange={(e) => actualizarCampo(s.id, "nombre", e.target.value)}
-              placeholder="Nombre del servicio"
-            />
-            <Switch checked={s.activo} onChange={(v) => actualizarCampo(s.id, "activo", v)} label={`Activo ${s.nombre}`} />
+          {/* Nombre en su propia fila: con Switch + borrar al lado (como
+              antes), los nombres reales ("Valoración Fisioterapéutica +
+              Ecografía", "Vendaje Funcional y Neuromuscular"...) no dejaban
+              ancho suficiente al input y el texto quedaba cortado sin forma
+              de verlo entero en móvil. */}
+          <input
+            className={`${inputClass} font-medium`}
+            value={s.nombre}
+            onChange={(e) => actualizarCampo(s.id, "nombre", e.target.value)}
+            placeholder="Nombre del servicio"
+          />
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2">
+              <Switch checked={s.activo} onChange={(v) => actualizarCampo(s.id, "activo", v)} label={`Activo ${s.nombre}`} />
+              <span className="text-[12.5px] text-ink-muted">{s.activo ? "Activo" : "Inactivo"}</span>
+            </div>
             <button
               type="button"
               onClick={() => setServicioAEliminar(s)}
@@ -195,8 +203,8 @@ export default function ServiciosEditor() {
           <div className="mt-2.5">
             <label className="mb-1 block text-[11.5px] text-ink-faint">Descripción</label>
             <textarea
-              className={`${inputClass} h-auto resize-none py-2`}
-              rows={2}
+              className={`${inputClass} h-auto py-2`}
+              rows={4}
               value={s.descripcion || ""}
               onChange={(e) => actualizarCampo(s.id, "descripcion", e.target.value)}
             />
@@ -209,14 +217,14 @@ export default function ServiciosEditor() {
 
       {nuevos.map((s, i) => (
         <Card key={`nuevo-${i}`} className="p-4">
-          <div className="flex items-center justify-between gap-3">
-            <input
-              className={`${inputClass} font-medium`}
-              value={s.nombre}
-              onChange={(e) => actualizarNuevo(i, "nombre", e.target.value)}
-              placeholder="Nombre del servicio"
-              autoFocus
-            />
+          <input
+            className={`${inputClass} font-medium`}
+            value={s.nombre}
+            onChange={(e) => actualizarNuevo(i, "nombre", e.target.value)}
+            placeholder="Nombre del servicio"
+            autoFocus
+          />
+          <div className="mt-2 flex justify-end">
             <button
               type="button"
               onClick={() => setNuevos((prev) => prev.filter((_, idx) => idx !== i))}
@@ -252,8 +260,8 @@ export default function ServiciosEditor() {
           <div className="mt-2.5">
             <label className="mb-1 block text-[11.5px] text-ink-faint">Descripción</label>
             <textarea
-              className={`${inputClass} h-auto resize-none py-2`}
-              rows={2}
+              className={`${inputClass} h-auto py-2`}
+              rows={4}
               value={s.descripcion}
               onChange={(e) => actualizarNuevo(i, "descripcion", e.target.value)}
             />

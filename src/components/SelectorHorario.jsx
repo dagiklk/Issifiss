@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
 import clsx from "clsx";
 import { supabase } from "../lib/supabaseClient";
-import { isPastSlot } from "../utils/dateHelpers.js";
+import { horaEnMadrid, isPastSlot, toISODate, zonedTimeToUtc } from "../utils/dateHelpers.js";
+import { minutosDesde, seSolapaConOcupadas } from "../lib/clinicData.js";
 
 // Genera los slots de "hora_inicio" a "hora_fin" en intervalos de "duracionMin".. 
 function generarSlots(horaInicio, horaFin, duracionMin) {
@@ -30,11 +31,12 @@ function generarSlots(horaInicio, horaFin, duracionMin) {
  */
 export default function SelectorHorario({ fecha, servicio, horaSeleccionada, onSelect }) {
   const [slots, setSlots] = useState([]);
-  const [ocupados, setOcupados] = useState(new Set());
+  const [ocupados, setOcupados] = useState([]);
   const [cargando, setCargando] = useState(false);
 
   useEffect(() => {
     if (!fecha || !servicio) return;
+    let active = true;
 
     async function cargarDisponibilidad() {
       setCargando(true);
@@ -52,33 +54,47 @@ export default function SelectorHorario({ fecha, servicio, horaSeleccionada, onS
       );
 
       // 2. Citas activas ya existentes ese día, para marcar huecos ocupados
-      const inicioDia = new Date(fecha);
-      inicioDia.setHours(0, 0, 0, 0);
-      const finDia = new Date(fecha);
-      finDia.setHours(23, 59, 59, 999);
+      // Límites del día y hora extraída en zona horaria de la clínica
+      // (Europe/Madrid), no en la del dispositivo que mira la pantalla: con
+      // fecha.setHours() alguien en otro huso horario podía consultar/leer
+      // el día equivocado, sobre todo cerca de medianoche en Madrid.
+      const fechaISO = toISODate(fecha);
+      const inicioDia = zonedTimeToUtc(fechaISO, "00:00");
+      const finDia = zonedTimeToUtc(fechaISO, "23:59");
 
       // "citas" no es legible por visitantes anónimos (RLS); usamos la vista
-      // pública "franjas_ocupadas", que solo expone fecha/hora de las citas activas.
+      // pública "franjas_ocupadas", que expone inicio Y fin de las citas
+      // activas. Antes solo se pedía "fecha_hora_inicio" y se marcaba
+      // ocupada una hora candidata solo si coincidía EXACTA con el inicio de
+      // otra cita — así, una cita de 60 min a las 10:00 no bloqueaba un hueco
+      // de 20 min a las 10:20 (que sí cae dentro de esos 60 minutos), y el
+      // paciente solo se enteraba del solape al enviar el formulario.
       const { data: citas } = await supabase
         .from("franjas_ocupadas")
-        .select("fecha_hora_inicio")
+        .select("fecha_hora_inicio, fecha_hora_fin")
         .gte("fecha_hora_inicio", inicioDia.toISOString())
         .lte("fecha_hora_inicio", finDia.toISOString());
 
-      const horasOcupadas = new Set(
-        (citas ?? []).map((c) => {
-          const d = new Date(c.fecha_hora_inicio);
-          return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
-        })
-      );
+      const horasOcupadas = (citas ?? []).map((c) => ({
+        inicio: minutosDesde(horaEnMadrid(new Date(c.fecha_hora_inicio))),
+        fin: minutosDesde(horaEnMadrid(new Date(c.fecha_hora_fin))),
+      }));
 
+      if (!active) return;
       setSlots(todosLosSlots);
       setOcupados(horasOcupadas);
       setCargando(false);
     }
 
     cargarDisponibilidad();
-  }, [fecha, servicio]);
+    return () => {
+      active = false;
+    };
+    // Dependencias por valor, no por identidad: "servicio" a veces llega como
+    // un objeto literal nuevo en cada render de quien llama (p.ej. Cancelar.jsx
+    // al reprogramar), lo que con [fecha, servicio] relanzaba esta consulta
+    // en cada tecleo/click aunque el día y el servicio elegidos no cambiaran.
+  }, [fecha?.getTime(), servicio?.id, servicio?.duracion_minutos]);
 
   if (cargando) {
     return <p className="py-4 text-center text-[13.5px] text-ink-faint">Buscando horarios disponibles…</p>;
@@ -97,7 +113,7 @@ export default function SelectorHorario({ fecha, servicio, horaSeleccionada, onS
         <p className="mb-2.5 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">{title}</p>
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
           {items.map((hora) => {
-            const ocupado = ocupados.has(hora);
+            const ocupado = seSolapaConOcupadas(ocupados, hora, servicio.duracion_minutos);
             const pasado = !ocupado && isPastSlot(fecha, hora);
             const seleccionado = horaSeleccionada === hora;
             return (

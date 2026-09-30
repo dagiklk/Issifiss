@@ -1,5 +1,6 @@
 import clsx from "clsx";
 import { Check } from "lucide-react";
+import { formatDuracion } from "../lib/clinicData.js";
 
 // "icono_bi" es una columna opcional en la tabla "servicios" de Supabase:
 // guarda el nombre de un icono de Bootstrap Icons (ej. "bi-heart-pulse",
@@ -68,7 +69,7 @@ export default function ServicioCard({ servicio, seleccionado = false, destacado
         {servicio.precio != null && (
           <span className="text-[15px] font-semibold tabular-nums text-ink">{Number(servicio.precio).toFixed(2)} €</span>
         )}
-        <span className="text-[12.5px] text-ink-faint">{servicio.duracion_minutos} min</span>
+        <span className="text-[12.5px] text-ink-faint">{formatDuracion(servicio.duracion_minutos)}</span>
       </div>
     </button>
   );

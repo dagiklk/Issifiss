@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Clock, Pencil, Stethoscope } from "lucide-react";
+import { Calendar, Pencil, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
 import Avatar from "../ui/Avatar.jsx";
 import Button from "../ui/Button.jsx";
@@ -29,6 +29,12 @@ export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
   const navigate = useNavigate();
   const { updateNotas, reprogramarCita } = useAppointments();
   const [nota, setNota] = useState(cita.notas || "");
+  // "cita" es una prop fijada al abrir el sheet: no se resincroniza sola con
+  // el contexto tras guardar. Sin esta base aparte, comparar contra
+  // "cita.notas" (obsoleto) dejaría el botón "Guardar nota" visible para
+  // siempre después de guardar con éxito, como si siguiera habiendo cambios
+  // sin guardar.
+  const [notaGuardada, setNotaGuardada] = useState(cita.notas || "");
   const [savingNota, setSavingNota] = useState(false);
   const [savingEstado, setSavingEstado] = useState(false);
   const { paciente, tratamiento } = cita;
@@ -61,7 +67,10 @@ export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
     try {
       await reprogramarCita(cita.id, { fecha: editFecha, horaInicio: editHora });
       toast.success("Cita reprogramada");
-      setEditandoFecha(false);
+      // "cita" es una prop fijada al abrir el sheet y no se actualiza sola:
+      // sin cerrar aquí, el bloque de fecha/hora de arriba seguiría
+      // mostrando el horario ANTIGUO aunque el cambio ya se guardó bien.
+      onClose?.();
     } catch (err) {
       toast.error(err.message || "No se pudo cambiar la fecha/hora.");
     } finally {
@@ -86,6 +95,7 @@ export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
     setSavingNota(true);
     try {
       await updateNotas(cita.id, nota);
+      setNotaGuardada(nota);
       toast.success("Nota guardada");
     } catch (err) {
       toast.error(err.message || "No se pudo guardar la nota.");
@@ -175,7 +185,7 @@ export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
           rows={3}
           className="w-full resize-none rounded-xl border border-line bg-canvas-sunken/60 p-3 text-[13.5px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:bg-white"
         />
-        {nota !== (cita.notas || "") && (
+        {nota !== notaGuardada && (
           <Button variant="secondary" size="sm" className="mt-2" disabled={savingNota} onClick={guardarNota}>
             {savingNota ? "Guardando…" : "Guardar nota"}
           </Button>

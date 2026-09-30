@@ -9,11 +9,14 @@ export default function Navbar() {
   const cliente = session && !isAdmin;
 
   return (
-    <header className="sticky top-0 z-20 border-b border-line bg-canvas/80 backdrop-blur-xl backdrop-saturate-150">
-      <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3.5 lg:px-8">
+    // Flota separada del borde en vez de pegada a todo el ancho, con la
+    // barra en sí redondeada del todo (rounded-full) — el look "pill
+    // flotante" más moderno frente a la tira recta de antes.
+    <header className="sticky top-3 z-20 px-3 lg:top-4 lg:px-6">
+      <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 rounded-full border border-line bg-white/85 py-2 pl-3.5 pr-2 shadow-soft backdrop-blur-xl backdrop-saturate-150 lg:pl-5 lg:pr-3">
         <Link to="/" className="flex shrink-0 items-center gap-2">
-          <img src={logo} alt="issifiss" className="h-9 w-9 object-contain" />
-          <span className="whitespace-nowrap font-display text-[19px] font-semibold tracking-display text-ink">
+          <img src={logo} alt="issifiss" className="h-8 w-8 object-contain" />
+          <span className="whitespace-nowrap font-display text-[17px] font-semibold tracking-display text-ink">
             issi<span className="text-sage-600">fiss</span>
           </span>
         </Link>

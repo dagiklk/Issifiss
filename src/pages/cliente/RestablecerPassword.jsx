@@ -93,6 +93,11 @@ export default function RestablecerPassword() {
                   {cargando ? "Guardando…" : "Guardar contraseña"}
                 </Button>
               </form>
+              <p className="mt-5 text-center text-[13px] text-ink-muted">
+                <Link to="/" className="font-medium text-sage-700 underline underline-offset-2">
+                  Cancelar y volver a la web
+                </Link>
+              </p>
             </>
           )}
         </Card>

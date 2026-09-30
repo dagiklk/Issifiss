@@ -83,6 +83,36 @@ export default function MiCuenta() {
     };
   }, [user]);
 
+  // Sin esto, cancelar/reprogramar una cita desde otra pestaña (p.ej.
+  // /cancelar?token=... abierto aparte) o desde el móvil dejaba esta lista
+  // desactualizada hasta recargar la página a mano — el panel de admin ya
+  // se mantiene al día así (AppointmentsContext.jsx), aquí faltaba.
+  useEffect(() => {
+    if (!paciente?.id) return;
+
+    async function recargarCitas() {
+      const { data } = await supabase
+        .from("citas")
+        .select("id, fecha_hora_inicio, estado, token_cancelacion, servicios(nombre)")
+        .eq("paciente_id", paciente.id)
+        .order("fecha_hora_inicio", { ascending: false });
+      setCitas(data || []);
+    }
+
+    const channel = supabase
+      .channel(`mi-cuenta-citas-${paciente.id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "citas", filter: `paciente_id=eq.${paciente.id}` },
+        recargarCitas
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [paciente?.id]);
+
   async function guardarPerfil(e) {
     e.preventDefault();
     if (!paciente) return;

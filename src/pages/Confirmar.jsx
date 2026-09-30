@@ -25,6 +25,8 @@ export default function Confirmar() {
   const [confirmada, setConfirmada] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     async function buscarCita() {
       if (!token) {
         setError("Enlace no válido: falta el token de la cita.");
@@ -37,6 +39,7 @@ export default function Confirmar() {
           headers: { Authorization: `Bearer ${ANON_KEY}` },
         });
         const data = await respuesta.json();
+        if (!active) return;
 
         if (!respuesta.ok) {
           setError(data.error || "No se ha encontrado ninguna cita con ese enlace.");
@@ -45,12 +48,16 @@ export default function Confirmar() {
           if (data.cita.estado === "confirmada") setConfirmada(true);
         }
       } catch {
+        if (!active) return;
         setError("No se ha podido comprobar la cita. Inténtalo de nuevo.");
       }
-      setCargando(false);
+      if (active) setCargando(false);
     }
 
     buscarCita();
+    return () => {
+      active = false;
+    };
   }, [token]);
 
   async function confirmarCita() {
@@ -102,6 +109,7 @@ export default function Confirmar() {
                   month: "long",
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "Europe/Madrid",
                 })}
               </p>
               <div className="mb-5 mt-3 flex justify-center">
@@ -113,7 +121,15 @@ export default function Confirmar() {
                   {confirmando ? "Confirmando…" : "Confirmar cita"}
                 </Button>
               ) : (
-                <p className="text-[13.5px] text-ink-faint">Esta cita ya está cancelada, no se puede confirmar.</p>
+                <p className="text-[13.5px] text-ink-faint">
+                  {
+                    {
+                      cancelada: "Esta cita ya está cancelada, no se puede confirmar.",
+                      completada: "Esta cita ya se completó, no hace falta confirmarla.",
+                      no_asistio: "Esta cita quedó marcada como no asistida, no se puede confirmar.",
+                    }[cita.estado] || "Esta cita ya no se puede confirmar."
+                  }
+                </p>
               )}
             </>
           )}
@@ -132,6 +148,7 @@ export default function Confirmar() {
                   month: "long",
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "Europe/Madrid",
                 })}
               </p>
               {cita.pacientes?.email && (

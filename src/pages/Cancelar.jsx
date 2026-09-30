@@ -48,6 +48,8 @@ export default function Cancelar() {
   const [reprogramada, setReprogramada] = useState(false);
 
   useEffect(() => {
+    let active = true;
+
     async function buscarCita() {
       if (!token) {
         setError("Enlace no válido: falta el token de la cita.");
@@ -60,6 +62,7 @@ export default function Cancelar() {
           headers: { Authorization: `Bearer ${ANON_KEY}` },
         });
         const data = await respuesta.json();
+        if (!active) return;
 
         if (!respuesta.ok) {
           setError(data.error || "No se ha encontrado ninguna cita con ese enlace.");
@@ -67,12 +70,16 @@ export default function Cancelar() {
           setCita(data.cita);
         }
       } catch {
+        if (!active) return;
         setError("No se ha podido comprobar la cita. Inténtalo de nuevo.");
       }
-      setCargando(false);
+      if (active) setCargando(false);
     }
 
     buscarCita();
+    return () => {
+      active = false;
+    };
   }, [token]);
 
   async function cancelarCita() {
@@ -161,6 +168,7 @@ export default function Cancelar() {
                   month: "long",
                   hour: "2-digit",
                   minute: "2-digit",
+                  timeZone: "Europe/Madrid",
                 })}
               </p>
               <div className="mb-5 mt-3 flex justify-center">

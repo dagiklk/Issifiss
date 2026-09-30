@@ -3,10 +3,12 @@ import { useAppointments } from "../../../context/AppointmentsContext.jsx";
 import EmptyState from "../ui/EmptyState.jsx";
 import { CalendarX } from "lucide-react";
 import { isPastSlot } from "../../../utils/dateHelpers.js";
+import { seSolapaConOcupadas } from "../../../lib/clinicData.js";
 
 export default function TimeSlotPicker({ fecha, duracionMin, value, onChange, excludeCitaId }) {
   const { slotsForDate, horasOcupadas } = useAppointments();
-  const slots = slotsForDate(fecha, duracionMin || 30);
+  const duracion = duracionMin || 30;
+  const slots = slotsForDate(fecha, duracion);
   const ocupadas = horasOcupadas(fecha, excludeCitaId);
   const morning = slots.filter((h) => h < "14:00");
   const afternoon = slots.filter((h) => h >= "14:00");
@@ -21,7 +23,7 @@ export default function TimeSlotPicker({ fecha, duracionMin, value, onChange, ex
         <p className="mb-2.5 text-[12.5px] font-medium uppercase tracking-eyebrow text-ink-faint">{title}</p>
         <div className="grid grid-cols-4 gap-2 sm:grid-cols-5">
           {items.map((hora) => {
-            const taken = ocupadas.has(hora);
+            const taken = seSolapaConOcupadas(ocupadas, hora, duracion);
             const pasado = !taken && isPastSlot(fecha, hora);
             const active = value === hora;
             return (

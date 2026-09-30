@@ -65,8 +65,8 @@ export default function Ajustes() {
         <div>
           <SectionTitle>Preferencias</SectionTitle>
           <Card className="overflow-hidden p-0">
-            <Row icon={Bell} label="Notificaciones" value="Nuevas citas y cancelaciones" action={<Switch checked={notifs} onChange={setNotifs} label="Notificaciones" />} />
-            <Row icon={Palette} label="Modo compacto" value="Listas más densas" action={<Switch checked={compact} onChange={setCompact} label="Modo compacto" />} />
+            <Row icon={Bell} label="Notificaciones" value="Próximamente" action={<Switch checked={notifs} onChange={setNotifs} label="Notificaciones" />} />
+            <Row icon={Palette} label="Modo compacto" value="Próximamente" action={<Switch checked={compact} onChange={setCompact} label="Modo compacto" />} />
             <Row icon={Moon} label="Tema oscuro" value="Próximamente" last action={<Switch checked={dark} onChange={setDark} label="Tema oscuro" />} />
           </Card>
         </div>

@@ -42,6 +42,17 @@ export function toUiPaciente(row) {
   };
 }
 
+// La duración guardada (duracion_minutos) es la que bloquea el hueco real en
+// la agenda — se deja en el máximo (p.ej. 60) para que nunca se quede corta.
+// De cara al paciente, sin embargo, se comunica como rango: si la sesión
+// dura menos porque el fisio termina antes, no hay problema. Solo se aplica
+// a las sesiones "largas" (60 min); las cortas (vendaje, valoración
+// ecográfica...) se muestran con su duración exacta, sin rango.
+export function formatDuracion(minutos) {
+  if (minutos === 60) return "45-60 min";
+  return `${minutos} min`;
+}
+
 export function toUiServicio(row) {
   if (!row) return null;
   return {
@@ -102,15 +113,43 @@ export function generarSlots(horaInicio, horaFin, duracionMin) {
   return slots;
 }
 
+// Minutos desde medianoche de una hora "HH:MM" (o "HH:MM:SS").
+export function minutosDesde(horaStr) {
+  const [h, m] = horaStr.split(":").map(Number);
+  return h * 60 + m;
+}
+
+// ¿Se solapa el hueco candidato [horaStr, horaStr + duracionMin) con ALGUNA
+// de las citas ya ocupadas ese día? "ocupadas" es una lista de intervalos
+// {inicio, fin} en minutos (ver horasOcupadas en AppointmentsContext.jsx y
+// SelectorHorario.jsx).
+//
+// Antes, "¿está ocupada esta hora?" comparaba solo la hora de INICIO exacta
+// de la cita candidata contra las horas de inicio de las citas existentes.
+// Eso falla en cuanto dos servicios tienen duraciones distintas: una cita de
+// Fisioterapia Manual (60 min) a las 10:00 ocupa hasta las 11:00, así que un
+// Vendaje (20 min) a las 10:20 también debe verse ocupado aunque no
+// coincida con ninguna hora de inicio existente — antes se mostraba libre,
+// y el paciente solo se enteraba del solape al enviar el formulario, cuando
+// el backend ya lo rechazaba con un 409 confuso.
+export function seSolapaConOcupadas(ocupadas, horaStr, duracionMin) {
+  const inicio = minutosDesde(horaStr);
+  const fin = inicio + duracionMin;
+  return ocupadas.some((o) => o.inicio < fin && o.fin > inicio);
+}
+
 export function diaSemanaFromISO(fechaISO) {
   return new Date(`${fechaISO}T00:00:00`).getDay();
 }
 
 export function slotsForDia(disponibilidad, diaSemana, duracionMin) {
   const franjas = (disponibilidad || []).filter((f) => f.dia_semana === diaSemana);
-  return franjas
-    .flatMap((f) => generarSlots(f.hora_inicio.slice(0, 5), f.hora_fin.slice(0, 5), duracionMin))
-    .sort();
+  const slots = franjas.flatMap((f) => generarSlots(f.hora_inicio.slice(0, 5), f.hora_fin.slice(0, 5), duracionMin));
+  // Set: si el admin configura dos franjas del mismo día que se solapan
+  // (nada lo impide en HorarioEditor.jsx), la misma hora puede salir de más
+  // de una franja — sin deduplicar aquí, TimeSlotPicker acaba renderizando
+  // botones de hora repetidos con la misma key de React.
+  return [...new Set(slots)].sort();
 }
 
 export const DIAS_SEMANA = ["Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado"];

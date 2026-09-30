@@ -1,7 +1,16 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
 import { format } from "date-fns";
+import { toast } from "sonner";
 import { supabase } from "../lib/supabaseClient.js";
-import { diaSemanaFromISO, slotsForDia, toUiCita, toUiPaciente, toUiServicio } from "../lib/clinicData.js";
+import {
+  diaSemanaFromISO,
+  minutosDesde,
+  seSolapaConOcupadas,
+  slotsForDia,
+  toUiCita,
+  toUiPaciente,
+  toUiServicio,
+} from "../lib/clinicData.js";
 import { zonedTimeToUtc } from "../utils/dateHelpers.js";
 
 // Real data provider for the admin UI — everything here reads from and
@@ -10,7 +19,13 @@ import { zonedTimeToUtc } from "../utils/dateHelpers.js";
 // stays in sync. No mock or local-only appointment data lives here.
 const AppointmentsContext = createContext(null);
 
-const CITA_SELECT = "*, pacientes(*), servicios(*)";
+// Columnas explícitas en vez de "*": "token_confirmacion" (ver
+// schema_ocultar_token_confirmacion.sql) no debe pedirse desde el cliente
+// aunque el admin sí tenga permiso de fila — el panel nunca lo usa, y una
+// vez aplicada esa migración un "*" fallaría igualmente al no tener acceso
+// de columna a él.
+const CITA_SELECT =
+  "id, paciente_id, servicio_id, fecha_hora_inicio, fecha_hora_fin, estado, token_cancelacion, notas, creado_en, precio, pacientes(*), servicios(*)";
 const NOTIFICAR_CONFIRMACION_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/notificar-confirmacion`;
 
 export function AppointmentsProvider({ children }) {
@@ -20,6 +35,14 @@ export function AppointmentsProvider({ children }) {
   const [disponibilidad, setDisponibilidad] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Antes, un fallo aquí (token caducado a medias, el admin fuera de la
+  // whitelist "admins", corte de red) dejaba citas/pacientes/servicios en []
+  // sin ningún aviso — el panel se veía "vacío" como si la clínica no tuviera
+  // nada, indistinguible de la realidad. Con esto al menos se avisa.
+  useEffect(() => {
+    if (error) toast.error("No se pudieron cargar los datos del panel. Comprueba tu conexión y recarga la página.");
+  }, [error]);
 
   const refreshCitas = useCallback(async () => {
     const { data, error } = await supabase.from("citas").select(CITA_SELECT).order("fecha_hora_inicio");
@@ -102,8 +125,14 @@ export function AppointmentsProvider({ children }) {
         nombre: nombre.trim(),
         telefono: telefono?.trim() || null,
         email: email?.trim() || null,
-        consentimiento_rgpd: true,
-        consentimiento_fecha: new Date().toISOString(),
+        // A diferencia de FormularioPaciente.jsx (reserva pública), el panel
+        // no muestra ningún checkbox de consentimiento al dar de alta un
+        // paciente a mano — así que no se puede afirmar que lo haya dado.
+        // Antes esto se guardaba como `true` con la fecha de ahora, dejando
+        // un registro legal de consentimiento de datos de salud que nunca
+        // se produjo realmente.
+        consentimiento_rgpd: false,
+        consentimiento_fecha: null,
       })
       .select()
       .single();
@@ -165,20 +194,16 @@ export function AppointmentsProvider({ children }) {
 
   const guardarFranjasDia = useCallback(
     async (diaSemana, franjas) => {
-      const { error: deleteError } = await supabase.from("disponibilidad").delete().eq("dia_semana", diaSemana);
-      if (deleteError) throw deleteError;
-
-      if (franjas.length > 0) {
-        const { error: insertError } = await supabase.from("disponibilidad").insert(
-          franjas.map((f) => ({
-            dia_semana: diaSemana,
-            hora_inicio: f.horaInicio,
-            hora_fin: f.horaFin,
-            activo: true,
-          }))
-        );
-        if (insertError) throw insertError;
-      }
+      // RPC atómica (ver supabase/schema_franjas_atomico.sql): borrar y
+      // volver a insertar como dos llamadas sueltas dejaba el día sin
+      // ninguna franja si la segunda fallaba justo después de que la
+      // primera tuviera éxito (red, validación...), sin que nadie se
+      // enterara hasta que un paciente no pudiera reservar ese día.
+      const { error } = await supabase.rpc("reemplazar_franjas_dia", {
+        p_dia_semana: diaSemana,
+        p_franjas: franjas.map((f) => ({ horaInicio: f.horaInicio, horaFin: f.horaFin })),
+      });
+      if (error) throw error;
 
       await refreshDisponibilidad();
     },
@@ -274,19 +299,22 @@ export function AppointmentsProvider({ children }) {
   function getUltima(pacienteId, beforeISO = format(new Date(), "yyyy-MM-dd")) {
     return getByPaciente(pacienteId).find((c) => c.fecha <= beforeISO && c.estado === "completada");
   }
+  // Devuelve los intervalos [inicio, fin) (en minutos desde medianoche) de
+  // las citas activas ese día, no un Set de horas de inicio — así un hueco
+  // candidato de otra duración puede comprobar si CAE DENTRO de una cita ya
+  // reservada, no solo si coincide exactamente con su hora de inicio (ver
+  // seSolapaConOcupadas en lib/clinicData.js).
   function horasOcupadas(fechaISO, excludeCitaId = null) {
-    return new Set(
-      getByFecha(fechaISO)
-        .filter((c) => c.estado !== "cancelada" && c.id !== excludeCitaId)
-        .map((c) => c.horaInicio)
-    );
+    return getByFecha(fechaISO)
+      .filter((c) => c.estado !== "cancelada" && c.id !== excludeCitaId)
+      .map((c) => ({ inicio: minutosDesde(c.horaInicio), fin: minutosDesde(c.horaFin) }));
   }
   function slotsForDate(fechaISO, duracionMin = 30) {
     return slotsForDia(disponibilidad, diaSemanaFromISO(fechaISO), duracionMin);
   }
   function horasLibres(fechaISO, duracionMin = 30, excludeCitaId = null) {
     const ocupadas = horasOcupadas(fechaISO, excludeCitaId);
-    return slotsForDate(fechaISO, duracionMin).filter((h) => !ocupadas.has(h));
+    return slotsForDate(fechaISO, duracionMin).filter((h) => !seSolapaConOcupadas(ocupadas, h, duracionMin));
   }
 
   const value = useMemo(

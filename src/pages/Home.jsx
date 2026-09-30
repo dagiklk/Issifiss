@@ -15,6 +15,7 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
+import { formatDuracion } from "../lib/clinicData.js";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import Button from "../components/admin/ui/Button.jsx";
@@ -62,7 +63,7 @@ const PASOS = [
 // El servicio de entrada natural para un paciente nuevo se destaca primero en
 // la cuadrícula, aunque no sea el más barato (el orden por defecto es por
 // precio ascendente).
-const SERVICIO_DESTACADO = "primera visita";
+const SERVICIO_DESTACADO = "valoración fisioterapéutica";
 
 // Envoltorio de scroll-reveal reutilizado por toda la página: aparece una vez,
 // al entrar en el viewport, con la misma curva que el resto de la UI.
@@ -346,8 +347,15 @@ export default function Home() {
           </h2>
           <p className="mt-2.5 text-[13.5px] text-ink-muted">Resérvala en menos de un minuto, sin llamadas.</p>
         </Reveal>
+        {/* flex+wrap en vez de grid: con un número de servicios que no es
+            múltiplo exacto de las columnas, un grid deja la última fila
+            incompleta pegada a la izquierda con un hueco vacío a la derecha.
+            Con flex-wrap + justify-center, esa fila sobrante queda centrada
+            sola — y cada tarjeta lleva su ancho fijado a mano (el mismo % que
+            tendría en el grid, menos su parte del gap) para que se comporte
+            igual en filas completas. */}
         <motion.div
-          className="grid grid-cols-1 gap-3.5 sm:grid-cols-2 lg:grid-cols-3"
+          className="flex flex-wrap justify-center gap-3.5"
           variants={staggerParent}
           initial="hidden"
           whileInView="show"
@@ -362,7 +370,7 @@ export default function Home() {
                 variants={staggerItem}
                 onClick={() => navigate("/reservar", { state: { servicioId: servicio.id } })}
                 className={
-                  "group relative flex flex-col gap-2 rounded-2xl border-2 bg-white p-5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-raised active:scale-[0.985] " +
+                  "group relative flex w-full flex-col gap-2 rounded-2xl border-2 bg-white p-5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-raised active:scale-[0.985] sm:w-[calc(50%-0.4375rem)] lg:w-[calc(33.333%-0.5833rem)] " +
                   (destacado ? "border-brand-500 hover:border-brand-600" : "border-ink/12 hover:border-ink")
                 }
               >
@@ -382,14 +390,14 @@ export default function Home() {
                     </span>
                   )}
                   <span className="text-[11px] font-bold uppercase tracking-[0.06em] text-ink-faint">
-                    {servicio.duracion_minutos} min
+                    {formatDuracion(servicio.duracion_minutos)}
                   </span>
                 </div>
               </motion.button>
             );
           })}
           {servicios.length === 0 && (
-            <p className="col-span-full py-6 text-center text-[13.5px] text-ink-faint">
+            <p className="w-full py-6 text-center text-[13.5px] text-ink-faint">
               Todavía no hay servicios configurados. Añádelos en la tabla "servicios" de Supabase.
             </p>
           )}
@@ -401,6 +409,29 @@ export default function Home() {
             </Button>
           </Reveal>
         )}
+      </section>
+
+      {/* ================= CONVENIOS Y COLABORACIONES ================= */}
+      <section className="border-t-2 border-ink bg-canvas-sunken/60">
+        <Reveal className="mx-auto max-w-2xl px-4 py-12 text-center lg:px-8 lg:py-16">
+          <Eyebrow>Convenios</Eyebrow>
+          <h2 className="mt-3 font-archivoBlack text-[24px] font-normal uppercase tracking-[-0.01em] text-ink sm:text-[28px]">
+            Convenios y colaboraciones
+          </h2>
+          <p className="mt-3 text-[14.5px] leading-relaxed text-ink-muted">
+            Contamos con convenios y colaboraciones con empresas, asociaciones, clubes y diferentes colectivos,
+            ofreciendo condiciones y promociones especiales para sus miembros. Las ventajas, descuentos y
+            condiciones se establecerán según cada convenio o colaboración.
+          </p>
+          <p className="mt-2 text-[14.5px] leading-relaxed text-ink-muted">
+            Para conocer las condiciones de tu convenio, ponte en contacto con nosotros.
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Button as="a" href="https://instagram.com/issifiss" target="_blank" rel="noreferrer" variant="secondary">
+              <span className="text-[12.5px] font-bold uppercase tracking-[0.08em]">Contactar</span>
+            </Button>
+          </div>
+        </Reveal>
       </section>
 
       {/* ================= ECOGRAFÍA (a pantalla completa) ================= */}

@@ -1,6 +1,22 @@
 import { es } from "date-fns/locale";
 import { format, isToday, isTomorrow, isYesterday, parseISO } from "date-fns";
 
+const TZ = "Europe/Madrid";
+
+// "HH:MM" de una fecha/hora UTC real, en la zona horaria de la clínica — para
+// comparar contra franjas de "disponibilidad" o agrupar huecos ocupados por
+// hora igual que hace el fisio, sin depender de la zona horaria del
+// dispositivo que mira la pantalla (mismo motivo que zonedTimeToUtc, más
+// abajo, pero en el sentido inverso).
+export function horaEnMadrid(fecha) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: TZ,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(fecha);
+}
+
 export function capitalize(str) {
   if (!str) return str;
   return str.charAt(0).toUpperCase() + str.slice(1);
@@ -59,13 +75,15 @@ export function displayNameFromSession(user) {
   return "Equipo";
 }
 
-// True if "HH:MM" on the given day (Date or "yyyy-MM-dd") is already in the past.
+// True if "HH:MM" on the given day (Date or "yyyy-MM-dd") is already in the
+// past. Va por zonedTimeToUtc (más abajo en este archivo, function
+// declaration => hoisted) en vez de Date+setHours(): "horaStr" es la hora
+// local de la clínica (Europe/Madrid), no la del dispositivo que mira el
+// selector — con setHours() alguien en otro huso horario podía ver como
+// "pasada" una hora que en Madrid todavía no ha llegado, o al revés.
 export function isPastSlot(dateOrISO, horaStr) {
-  const date = typeof dateOrISO === "string" ? parseISO(dateOrISO) : dateOrISO;
-  const [h, m] = horaStr.split(":").map(Number);
-  const slot = new Date(date);
-  slot.setHours(h, m, 0, 0);
-  return slot.getTime() < Date.now();
+  const fechaISO = typeof dateOrISO === "string" ? dateOrISO : toISODate(dateOrISO);
+  return zonedTimeToUtc(fechaISO, horaStr).getTime() < Date.now();
 }
 
 // Convierte una hora local de la clínica ("YYYY-MM-DD", "HH:MM", zona horaria

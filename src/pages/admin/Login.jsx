@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useAuth } from "../../context/AuthContext.jsx";
 import Card from "../../components/admin/ui/Card.jsx";
 import Button from "../../components/admin/ui/Button.jsx";
@@ -9,7 +10,7 @@ const inputClass =
   "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none";
 
 export default function Login() {
-  const { login, session, isAdmin, loading } = useAuth();
+  const { login, logout, session, isAdmin, loading } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -29,10 +30,18 @@ export default function Login() {
     if (session && isAdmin) {
       navigate("/admin/panel", { replace: true });
     } else if (intentado && session && !isAdmin) {
-      setError("Esta cuenta no tiene acceso al panel de administración.");
-      setCargando(false);
+      // Sin esto, signInWithPassword() ya había dejado una sesión real
+      // abierta antes de comprobar el rol: el mensaje de error se veía,
+      // pero la sesión de ese usuario (paciente) seguía activa de fondo. En
+      // un ordenador compartido (p.ej. recepción), la siguiente persona que
+      // visitara /cuenta vería sus datos sin volver a pedir contraseña.
+      setIntentado(false);
+      logout().finally(() => {
+        setError("Esta cuenta no tiene acceso al panel de administración.");
+        setCargando(false);
+      });
     }
-  }, [loading, session, isAdmin, intentado, navigate]);
+  }, [loading, session, isAdmin, intentado, navigate, logout]);
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -56,8 +65,18 @@ export default function Login() {
   }
 
   return (
-    <div className="site-app flex min-h-dvh items-center justify-center bg-canvas px-4">
+    <div className="site-app flex min-h-dvh flex-col items-center justify-center bg-canvas px-4 py-10">
       <div className="w-full max-w-sm">
+        {/* Esta pantalla no lleva Navbar (es aparte, para el equipo): sin
+            esto no había ningún enlace de vuelta a la web — quien aterrizara
+            aquí no podía ir a ningún sitio sin escribir otra URL a mano. */}
+        <Link
+          to="/"
+          className="mb-4 inline-flex items-center gap-1.5 text-[13px] font-medium text-ink-muted transition-colors hover:text-ink"
+        >
+          <ArrowLeft size={15} strokeWidth={2} />
+          Volver a la web
+        </Link>
         <Card className="p-6 lg:p-8">
           <div className="flex items-center gap-2.5">
             <img src={logo} alt="issifiss" className="h-9 w-9 object-contain" />
@@ -94,6 +113,13 @@ export default function Login() {
               {cargando ? "Entrando…" : "Entrar"}
             </Button>
           </form>
+
+          <p className="mt-5 text-center text-[13px] text-ink-muted">
+            ¿Eres paciente?{" "}
+            <Link to="/cuenta/login" className="font-medium text-sage-700 underline underline-offset-2">
+              Inicia sesión en tu cuenta
+            </Link>
+          </p>
         </Card>
       </div>
     </div>

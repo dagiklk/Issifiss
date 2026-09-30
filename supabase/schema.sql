@@ -126,6 +126,20 @@ alter table disponibilidad enable row level security;
 alter table citas enable row level security;
 alter table bonos enable row level security;
 
+-- ⚠️ IMPORTANTE — las políticas "_admin_all" de aquí abajo (using(true) para
+-- CUALQUIER usuario autenticado) son solo el punto de partida de este
+-- archivo. supabase/schema_cuentas_clientes.sql las SUSTITUYE (drop +
+-- create con el mismo nombre) por una versión que exige is_admin() — porque
+-- ese mismo archivo introduce las cuentas de cliente, que también son
+-- "authenticated" pero NO deben poder leer/editar pacientes ni citas ajenas,
+-- ni tocar servicios/disponibilidad. Si en algún entorno nuevo (staging,
+-- restaurar un backup, dar de alta a otro fisio) solo se ejecuta ESTE
+-- archivo y se olvida schema_cuentas_clientes.sql, cualquier persona que se
+-- registre como cliente en /cuenta/registro queda con permiso para leer y
+-- editar los datos de salud de TODOS los pacientes, cambiar precios de
+-- servicios y modificar el horario de la clínica. Ejecuta SIEMPRE
+-- schema_cuentas_clientes.sql justo después de este archivo.
+
 -- --- servicios: lectura pública de los activos, gestión completa solo autenticado ---
 create policy "servicios_select_publico"
     on servicios for select

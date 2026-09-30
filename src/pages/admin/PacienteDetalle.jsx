@@ -27,7 +27,7 @@ function InfoRow({ icon: Icon, value }) {
 export default function PacienteDetalle() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const { pacientes, getByPaciente, getProxima, updateStatus, actualizarNotasPaciente } = useAppointments();
+  const { pacientes, loading, getByPaciente, getProxima, updateStatus, actualizarNotasPaciente } = useAppointments();
   const [openCita, setOpenCita] = useState(null);
   const [editNotas, setEditNotas] = useState(false);
   const [notas, setNotas] = useState("");
@@ -38,10 +38,18 @@ export default function PacienteDetalle() {
   const proxima = paciente ? getProxima(paciente.id) : null;
 
   if (!paciente) {
+    // Distingue "todavía está cargando" de "de verdad no existe": sin esto,
+    // un fallo de carga (ver AppointmentsContext) o simplemente abrir el
+    // enlace antes de que "pacientes" termine de llegar mostraba "Paciente
+    // no encontrado" para un paciente que sí existe.
     return (
       <div className="mx-auto max-w-5xl">
         <PageHeader title="Paciente" back={-1} />
-        <EmptyState icon={UserX} title="Paciente no encontrado" description="Puede que el enlace ya no sea válido." />
+        {loading ? (
+          <p className="px-4 py-8 text-center text-[13.5px] text-ink-faint lg:px-8">Cargando paciente…</p>
+        ) : (
+          <EmptyState icon={UserX} title="Paciente no encontrado" description="Puede que el enlace ya no sea válido." />
+        )}
       </div>
     );
   }

@@ -46,7 +46,11 @@ export default function NuevaCita() {
     return pacientes.filter((p) => patientFullName(p).toLowerCase().includes(q));
   }, [query, pacientes]);
 
-  const canNext = [!!paciente, !!tratamiento, !!fecha, !!hora, true][step];
+  // El último "true" era fijo: si el servicio elegido se desactiva mientras
+  // el asistente sigue abierto en el paso 4 (p.ej. otra pestaña de admin lo
+  // desactiva desde Ajustes), "tratamiento" pasa a undefined pero el botón
+  // "Confirmar" seguía habilitado y confirm() reventaba en tratamiento.id.
+  const canNext = [!!paciente, !!tratamiento, !!fecha, !!hora, !!tratamiento][step];
 
   function next() {
     if (step === STEPS.length - 1) return confirm();
@@ -58,6 +62,7 @@ export default function NuevaCita() {
   }
 
   async function confirm() {
+    if (!tratamiento) return;
     setSubmitting(true);
     try {
       const cita = await crearCita({
@@ -235,7 +240,15 @@ export default function NuevaCita() {
 
             {step === 3 && <TimeSlotPicker fecha={fecha} duracionMin={tratamiento?.duracionMin} value={hora} onChange={setHora} />}
 
-            {step === 4 && (
+            {step === 4 && !tratamiento && (
+              <Card className="p-5 text-center">
+                <p className="text-[13.5px] text-ink-muted">
+                  El servicio elegido ya no está disponible (puede que se haya desactivado). Vuelve atrás y elige otro.
+                </p>
+              </Card>
+            )}
+
+            {step === 4 && tratamiento && (
               <Card className="p-5">
                 <p className="mb-4 text-[13px] font-semibold uppercase tracking-eyebrow text-ink-faint">Resumen</p>
                 <div className="flex items-center gap-3 border-b border-line pb-4">

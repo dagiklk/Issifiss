@@ -5,6 +5,7 @@ import { CalendarCheck2 } from "lucide-react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "../context/AuthContext.jsx";
 import { obtenerPacientePropio } from "../lib/clientePaciente.js";
+import { toISODate, zonedTimeToUtc } from "../utils/dateHelpers.js";
 import Navbar from "../components/Navbar.jsx";
 import Footer from "../components/Footer.jsx";
 import ServicioCard from "../components/ServicioCard.jsx";
@@ -72,11 +73,15 @@ export default function Reservar() {
       const lista = data ?? [];
       setServicios(lista);
 
-      // El servicio elegido en la landing (Home) viaja como state de router;
-      // lo preseleccionamos aquí para no obligar a elegirlo otra vez.
+      // El servicio elegido en la landing (Home) viaja como state de router:
+      // ya declaró qué quiere reservar, así que no tiene sentido hacerle
+      // pasar otra vez por "Elige tu sesión" — vamos directos al horario.
       if (servicioIdPreseleccionado) {
         const encontrado = lista.find((s) => s.id === servicioIdPreseleccionado);
-        if (encontrado) setServicioSeleccionado(encontrado);
+        if (encontrado) {
+          setServicioSeleccionado(encontrado);
+          setPaso(1);
+        }
       }
     }
     cargarServicios();
@@ -107,6 +112,22 @@ export default function Reservar() {
     };
   }, [clienteLogueado, session]);
 
+  // Avanzar solo al tocar "Continuar" obligaba a bajar hasta el final de la
+  // pantalla tras elegir servicio/horario — en móvil, con la lista de
+  // servicios o la rejilla de horas ocupando toda la pantalla, eso son dos
+  // gestos (elegir + bajar a buscar el botón) para uno solo. Con un pequeño
+  // retraso el usuario ve su elección resaltada un instante antes de pasar
+  // al siguiente paso, en vez de saltar de golpe.
+  function seleccionarServicio(servicio) {
+    setServicioSeleccionado(servicio);
+    setTimeout(() => setPaso(1), 320);
+  }
+
+  function seleccionarHora(hora) {
+    setHoraSeleccionada(hora);
+    setTimeout(() => setPaso(2), 320);
+  }
+
   async function handleLoginInline(e) {
     e.preventDefault();
     setLoginError(null);
@@ -130,9 +151,11 @@ export default function Reservar() {
     setEnviando(true);
     setErrorReserva(null);
 
-    const fechaHoraInicio = new Date(fechaSeleccionada);
-    const [h, m] = horaSeleccionada.split(":").map(Number);
-    fechaHoraInicio.setHours(h, m, 0, 0);
+    // zonedTimeToUtc, no new Date()+setHours(): "horaSeleccionada" es la hora
+    // local de la CLÍNICA (Europe/Madrid), no la del navegador del cliente —
+    // con setHours() alguien reservando desde otro huso horario vería "10:00"
+    // en la confirmación pero la cita quedaría guardada a otra hora real.
+    const fechaHoraInicio = zonedTimeToUtc(toISODate(fechaSeleccionada), horaSeleccionada);
 
     let accessToken = clienteLogueado ? session.access_token : null;
     let cuentaPendiente = false;
@@ -168,9 +191,9 @@ export default function Reservar() {
           servicio_id: servicioSeleccionado.id,
           fecha_hora_inicio: fechaHoraInicio.toISOString(),
           paciente: {
-            nombre: datosPaciente.nombre,
-            email: datosPaciente.email,
-            telefono: datosPaciente.telefono,
+            nombre: datosPaciente.nombre?.trim(),
+            email: datosPaciente.email?.trim(),
+            telefono: datosPaciente.telefono?.trim(),
           },
           consentimiento_rgpd: datosPaciente.consentimientoRGPD,
           notas: datosPaciente.notas,
@@ -178,7 +201,14 @@ export default function Reservar() {
       });
 
       const data = await respuesta.json();
-      if (!respuesta.ok) throw new Error(data.error || "No se pudo completar la reserva");
+      if (!respuesta.ok) {
+        // 409 = alguien más acaba de reservar ese hueco (ver crear-cita): sin
+        // esto, "horaSeleccionada" seguía apuntando al hueco ya no
+        // disponible, y si el usuario volvía al paso 1 con "Atrás" y pulsaba
+        // "Continuar" otra vez sin fijarse, repetía la misma reserva fallida.
+        if (respuesta.status === 409) setHoraSeleccionada(null);
+        throw new Error(data.error || "No se pudo completar la reserva");
+      }
 
       setCitaConfirmada(data.cita);
       setCuentaPendienteConfirmacion(cuentaPendiente);
@@ -208,7 +238,7 @@ export default function Reservar() {
                       key={servicio.id}
                       servicio={servicio}
                       seleccionado={servicioSeleccionado?.id === servicio.id}
-                      onSelect={setServicioSeleccionado}
+                      onSelect={seleccionarServicio}
                     />
                   ))}
                   {servicios.length === 0 && (
@@ -217,9 +247,6 @@ export default function Reservar() {
                     </p>
                   )}
                 </div>
-                <Button variant="accent" block disabled={!servicioSeleccionado} onClick={() => setPaso(1)} className="mt-5">
-                  Continuar
-                </Button>
               </>
             )}
 
@@ -261,16 +288,13 @@ export default function Reservar() {
                     fecha={fechaSeleccionada}
                     servicio={servicioSeleccionado}
                     horaSeleccionada={horaSeleccionada}
-                    onSelect={setHoraSeleccionada}
+                    onSelect={seleccionarHora}
                   />
                 )}
 
                 <div className="mt-5 flex gap-2.5">
                   <Button variant="secondary" onClick={() => setPaso(0)}>
                     Atrás
-                  </Button>
-                  <Button variant="accent" block disabled={!horaSeleccionada} onClick={() => setPaso(2)}>
-                    Continuar
                   </Button>
                 </div>
               </>
