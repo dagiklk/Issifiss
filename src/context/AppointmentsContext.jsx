@@ -180,6 +180,24 @@ export function AppointmentsProvider({ children }) {
     [refreshCitas]
   );
 
+  const generarFactura = useCallback(async (citaId, { formaPago, dni }) => {
+    const { data, error } = await supabase.rpc("crear_factura", {
+      p_cita_id: citaId,
+      p_forma_pago: formaPago,
+      p_dni_cliente: dni.trim(),
+    });
+    if (error) throw error;
+
+    // Si el paciente no tenía DNI guardado, crear_factura() lo acaba de
+    // rellenar en la base de datos — reflejamos eso aquí para que no haga
+    // falta recargar el panel para que la próxima factura ya lo traiga solo.
+    setPacientes((prev) =>
+      prev.map((p) => (p.id === data.paciente_id && !p.dni ? { ...p, dni: data.dni_cliente } : p))
+    );
+
+    return data;
+  }, []);
+
   const updateNotas = useCallback(
     async (citaId, notas) => {
       setCitas((prev) => prev.map((c) => (c.id === citaId ? { ...c, notas } : c)));
@@ -332,6 +350,7 @@ export function AppointmentsProvider({ children }) {
       crearPaciente,
       actualizarNotasPaciente,
       guardarFranjasDia,
+      generarFactura,
       getByFecha,
       getByPaciente,
       getProxima,
@@ -355,6 +374,7 @@ export function AppointmentsProvider({ children }) {
       crearPaciente,
       actualizarNotasPaciente,
       guardarFranjasDia,
+      generarFactura,
       refreshCitas,
     ]
   );

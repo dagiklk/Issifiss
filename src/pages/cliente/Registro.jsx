@@ -11,10 +11,16 @@ import { obtenerPacientePropio } from "../../lib/clientePaciente.js";
 const inputClass =
   "h-11 w-full rounded-xl border border-line bg-white px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:outline-none";
 
+// DNI (8 dígitos + letra) o NIE (X/Y/Z + 7 dígitos + letra). No se comprueba
+// la letra de control: basta con el formato para evitar que se cuele un
+// valor claramente inválido, sin rechazar DNIs/NIEs reales por un cálculo
+// de letra hecho a mano mal.
+const DNI_REGEX = /^[0-9XYZxyz][0-9]{7}[A-Za-z]$/;
+
 export default function ClienteRegistro() {
   const { signUp } = useAuth();
   const navigate = useNavigate();
-  const [datos, setDatos] = useState({ nombre: "", email: "", telefono: "", password: "", confirmarPassword: "" });
+  const [datos, setDatos] = useState({ nombre: "", email: "", telefono: "", dni: "", password: "", confirmarPassword: "" });
   const [consentimiento, setConsentimiento] = useState(false);
   const [errores, setErrores] = useState({});
   const [cargando, setCargando] = useState(false);
@@ -28,6 +34,8 @@ export default function ClienteRegistro() {
     const nuevos = {};
     if (!datos.nombre.trim()) nuevos.nombre = "Introduce tu nombre";
     if (!datos.email.trim()) nuevos.email = "Introduce tu email";
+    if (!datos.dni.trim()) nuevos.dni = "Introduce tu DNI/NIF";
+    else if (!DNI_REGEX.test(datos.dni.trim())) nuevos.dni = "El DNI/NIF no tiene un formato válido";
     if (!datos.password || datos.password.length < 6) nuevos.password = "La contraseña debe tener al menos 6 caracteres";
     else if (datos.password !== datos.confirmarPassword) nuevos.confirmarPassword = "Las contraseñas no coinciden";
     if (!consentimiento) nuevos.consentimiento = "Debes aceptar el tratamiento de tus datos para continuar";
@@ -44,6 +52,7 @@ export default function ClienteRegistro() {
       const { session, user } = await signUp(datos.email.trim(), datos.password, {
         nombre: datos.nombre.trim(),
         telefono: datos.telefono.trim(),
+        dni: datos.dni.trim().toUpperCase(),
       });
 
       if (session) {
@@ -127,6 +136,18 @@ export default function ClienteRegistro() {
                 onChange={(e) => actualizar("telefono", e.target.value)}
                 placeholder="600 000 000"
               />
+            </div>
+            <div>
+              <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">DNI/NIF</label>
+              <input
+                className={inputClass}
+                type="text"
+                value={datos.dni}
+                onChange={(e) => actualizar("dni", e.target.value.toUpperCase())}
+                placeholder="12345678A"
+              />
+              <p className="mt-1.5 text-[12px] text-ink-faint">Lo necesitamos para poder emitirte factura de tus sesiones.</p>
+              {errores.dni && <p className="mt-1.5 text-[12.5px] text-rose-600">{errores.dni}</p>}
             </div>
             <div>
               <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Contraseña</label>

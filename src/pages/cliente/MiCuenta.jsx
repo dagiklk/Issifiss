@@ -46,7 +46,7 @@ function CitaRow({ cita, cancelable }) {
 export default function MiCuenta() {
   const { user, logout, updatePassword } = useAuth();
   const [paciente, setPaciente] = useState(null);
-  const [form, setForm] = useState({ nombre: "", telefono: "" });
+  const [form, setForm] = useState({ nombre: "", telefono: "", dni: "" });
   const [citas, setCitas] = useState([]);
   const [cargando, setCargando] = useState(true);
   const [guardando, setGuardando] = useState(false);
@@ -62,7 +62,7 @@ export default function MiCuenta() {
         const propio = await obtenerPacientePropio(user);
         if (!active || !propio) return;
         setPaciente(propio);
-        setForm({ nombre: propio.nombre || "", telefono: propio.telefono || "" });
+        setForm({ nombre: propio.nombre || "", telefono: propio.telefono || "", dni: propio.dni || "" });
 
         const { data } = await supabase
           .from("citas")
@@ -123,6 +123,7 @@ export default function MiCuenta() {
         .update({
           nombre: form.nombre.trim(),
           telefono: form.telefono.trim() || null,
+          dni: form.dni.trim().toUpperCase() || null,
         })
         .eq("id", paciente.id);
       if (error) throw error;
@@ -221,6 +222,17 @@ export default function MiCuenta() {
                       onChange={(e) => setForm((p) => ({ ...p, telefono: e.target.value }))}
                     />
                   </div>
+                </div>
+                <div>
+                  <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">DNI/NIF</label>
+                  <input
+                    className={inputClass}
+                    type="text"
+                    value={form.dni}
+                    onChange={(e) => setForm((p) => ({ ...p, dni: e.target.value.toUpperCase() }))}
+                    placeholder="12345678A"
+                  />
+                  <p className="mt-1.5 text-[12px] text-ink-faint">Lo necesitamos para poder emitirte factura de tus sesiones.</p>
                 </div>
                 <Button type="submit" variant="secondary" disabled={guardando} className="self-start">
                   {guardando ? "Guardando…" : "Guardar cambios"}
