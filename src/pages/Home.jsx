@@ -152,7 +152,7 @@ export default function Home() {
       <Navbar />
 
       {/* ================= HERO ================= */}
-      <section ref={heroRef} className="relative overflow-hidden">
+      <section ref={heroRef} className="relative overflow-hidden bg-gradient-to-b from-brand-50 via-canvas to-canvas">
         <GlowOrb className="-left-24 -top-32 h-[420px] w-[420px] bg-brand-200/40" />
         <GlowOrb className="-right-32 top-10 h-[380px] w-[380px] bg-brand-100/70" />
         {/*
@@ -277,7 +277,7 @@ export default function Home() {
         </div>
 
         {/* Franja de confianza: cierra el hero con hechos concretos, sin relleno */}
-        <div className="relative border-y-2 border-ink bg-white/60 backdrop-blur-sm">
+        <div className="relative border-y-2 border-ink bg-gradient-to-r from-white/70 via-brand-50/50 to-white/70 backdrop-blur-sm">
           <div className="mx-auto max-w-5xl px-4 py-4 lg:px-8">
             <div className="flex flex-col divide-y divide-ink/10 sm:flex-row sm:flex-wrap sm:items-center sm:justify-center sm:divide-x sm:divide-y-0">
               {TRUST_STRIP.map(({ icon: Icon, texto }) => (
@@ -295,7 +295,7 @@ export default function Home() {
       </section>
 
       {/* ================= CÓMO FUNCIONA ================= */}
-      <section className="relative overflow-hidden border-b-2 border-ink bg-canvas-sunken/60">
+      <section className="relative overflow-hidden border-b-2 border-ink bg-gradient-to-br from-canvas-sunken via-brand-50/50 to-canvas-sunken">
         <GlowOrb className="left-1/2 top-0 h-[360px] w-[600px] -translate-x-1/2 bg-brand-100/60" />
         <div className="relative mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20">
           <Reveal className="mx-auto mb-10 max-w-xl text-center">
@@ -314,7 +314,7 @@ export default function Home() {
           >
             {PASOS.map(({ numero, icon: Icon, titulo, texto }, i) => (
               <motion.div key={numero} variants={staggerItem} className="relative">
-                <div className="flex h-full flex-col gap-3.5 rounded-2xl border-2 border-ink bg-white p-5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-raised">
+                <div className="flex h-full flex-col gap-3.5 rounded-2xl border-2 border-ink bg-gradient-to-b from-white to-brand-50/40 p-5 transition-transform duration-200 hover:-translate-y-0.5 hover:shadow-raised">
                   <div className="flex items-center justify-between">
                     <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
                       <Icon size={18} strokeWidth={1.9} />
@@ -339,7 +339,8 @@ export default function Home() {
       </section>
 
       {/* ================= SERVICIOS ================= */}
-      <section id="servicios" className="mx-auto max-w-5xl scroll-mt-20 px-4 py-14 lg:px-8 lg:py-20">
+      <section id="servicios" className="scroll-mt-20 bg-gradient-to-b from-canvas via-brand-50/30 to-canvas px-4 py-14 lg:px-8 lg:py-20">
+        <div className="mx-auto max-w-5xl">
         <Reveal className="mx-auto mb-8 max-w-xl text-center lg:mb-10">
           <Eyebrow>Servicios</Eyebrow>
           <h2 className="mt-3 font-archivoBlack text-[26px] font-normal uppercase tracking-[-0.01em] text-ink sm:text-[32px]">
@@ -370,7 +371,7 @@ export default function Home() {
                 variants={staggerItem}
                 onClick={() => navigate("/reservar", { state: { servicioId: servicio.id } })}
                 className={
-                  "group relative flex w-full flex-col gap-2 rounded-2xl border-2 bg-white p-5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-raised active:scale-[0.985] sm:w-[calc(50%-0.4375rem)] lg:w-[calc(33.333%-0.5833rem)] " +
+                  "group relative flex w-full flex-col gap-2 rounded-2xl border-2 bg-gradient-to-b from-white to-brand-50/30 p-5 text-left transition-all duration-150 hover:-translate-y-0.5 hover:shadow-raised active:scale-[0.985] sm:w-[calc(50%-0.4375rem)] lg:w-[calc(33.333%-0.5833rem)] " +
                   (destacado ? "border-brand-500 hover:border-brand-600" : "border-ink/12 hover:border-ink")
                 }
               >
@@ -409,10 +410,11 @@ export default function Home() {
             </Button>
           </Reveal>
         )}
+        </div>
       </section>
 
       {/* ================= CONVENIOS Y COLABORACIONES ================= */}
-      <section className="border-t-2 border-ink bg-canvas-sunken/60">
+      <section className="border-t-2 border-ink bg-gradient-to-br from-canvas-sunken via-brand-50/40 to-canvas-sunken">
         <Reveal className="mx-auto max-w-2xl px-4 py-12 text-center lg:px-8 lg:py-16">
           <Eyebrow>Convenios</Eyebrow>
           <h2 className="mt-3 font-archivoBlack text-[24px] font-normal uppercase tracking-[-0.01em] text-ink sm:text-[28px]">
@@ -435,7 +437,7 @@ export default function Home() {
       </section>
 
       {/* ================= ECOGRAFÍA (a pantalla completa) ================= */}
-      <section className="relative overflow-hidden border-y-2 border-ink bg-ink">
+      <section className="relative overflow-hidden border-y-2 border-ink bg-gradient-to-br from-ink via-ink to-brand-900">
         <GlowOrb className="-left-20 top-1/3 h-[420px] w-[420px] bg-brand-500/10" />
         <GlowOrb className="right-0 -bottom-20 h-[320px] w-[320px] bg-brand-400/10" />
         <div className="relative mx-auto grid max-w-5xl grid-cols-1 items-center gap-10 px-4 py-14 lg:grid-cols-2 lg:gap-14 lg:px-8 lg:py-20">
@@ -495,7 +497,7 @@ export default function Home() {
 
       {/* ================= CTA FINAL ================= */}
       <Reveal className="mx-auto max-w-5xl px-4 py-14 lg:px-8 lg:py-20" y={24}>
-        <div className="relative overflow-hidden rounded-[28px] border-2 border-ink bg-brand-700 px-6 py-11 text-center shadow-raised sm:px-10 lg:py-16">
+        <div className="relative overflow-hidden rounded-[28px] border-2 border-ink bg-gradient-to-br from-brand-600 via-brand-700 to-brand-900 px-6 py-11 text-center shadow-raised sm:px-10 lg:py-16">
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 bg-[radial-gradient(60%_80%_at_50%_0%,rgba(255,255,255,0.12),transparent_70%)]"

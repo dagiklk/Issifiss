@@ -3,7 +3,7 @@ import logo from "../assets/logo.png";
 
 export default function Footer() {
   return (
-    <footer className="border-t border-line bg-canvas-sunken/60">
+    <footer className="border-t border-line bg-gradient-to-b from-canvas-sunken to-canvas">
       <div className="mx-auto flex max-w-5xl flex-col items-center gap-3 px-4 py-8 text-center lg:flex-row lg:justify-between lg:px-8 lg:text-left">
         <div className="flex items-center gap-2.5">
           <img src={logo} alt="issifiss" className="h-6 w-6 object-contain" />
