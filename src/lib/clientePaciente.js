@@ -27,6 +27,7 @@ export async function obtenerPacientePropio(user) {
       user_id: user.id,
       nombre: meta.nombre?.trim() || user.email,
       telefono: meta.telefono?.trim() || null,
+      dni: meta.dni?.trim() || null,
       email: user.email,
       consentimiento_rgpd: true,
       consentimiento_fecha: new Date().toISOString(),

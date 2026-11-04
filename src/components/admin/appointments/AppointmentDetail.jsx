@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Calendar, Pencil, Stethoscope } from "lucide-react";
+import clsx from "clsx";
+import { Calendar, FileText, Pencil, Stethoscope } from "lucide-react";
 import { toast } from "sonner";
 import Avatar from "../ui/Avatar.jsx";
 import Button from "../ui/Button.jsx";
@@ -10,6 +11,13 @@ import TimeSlotPicker from "./TimeSlotPicker.jsx";
 import { patientFullName } from "../../../lib/clinicData.js";
 import { formatLongDate } from "../../../utils/dateHelpers.js";
 import { useAppointments } from "../../../context/AppointmentsContext.jsx";
+import { generarFacturaPdf } from "../../../lib/facturaPdf.js";
+
+const FORMAS_PAGO = [
+  { value: "bizum", label: "Bizum" },
+  { value: "transferencia", label: "Transferencia" },
+  { value: "efectivo", label: "Efectivo" },
+];
 
 function Row({ icon: Icon, label, value }) {
   return (
@@ -27,8 +35,15 @@ function Row({ icon: Icon, label, value }) {
 
 export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
   const navigate = useNavigate();
-  const { updateNotas, reprogramarCita } = useAppointments();
+  const { updateNotas, reprogramarCita, generarFactura } = useAppointments();
   const [nota, setNota] = useState(cita.notas || "");
+  // null = vista normal; "preguntar"/"pago" = pasos del flujo de factura,
+  // que sustituyen el contenido del sheet tras marcar la cita como
+  // completada (ver updateStatus más abajo).
+  const [pasoFactura, setPasoFactura] = useState(null);
+  const [formaPago, setFormaPago] = useState("bizum");
+  const [dni, setDni] = useState(cita.paciente?.dni || "");
+  const [generandoFactura, setGenerandoFactura] = useState(false);
   // "cita" es una prop fijada al abrir el sheet: no se resincroniza sola con
   // el contexto tras guardar. Sin esta base aparte, comparar contra
   // "cita.notas" (obsoleto) dejaría el botón "Guardar nota" visible para
@@ -83,11 +98,52 @@ export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
     try {
       await onStatusChange?.(cita.id, next);
       toast.success(message);
-      onClose?.();
+      // Al completar una sesión, en vez de cerrar el sheet directamente se
+      // ofrece generar su factura — el cierre queda en manos de esa
+      // respuesta (responderPreguntaFactura / generarFacturaYDescargar).
+      if (next === "completada") {
+        setPasoFactura("preguntar");
+      } else {
+        onClose?.();
+      }
     } catch (err) {
       toast.error(err.message || "No se pudo actualizar la cita.");
     } finally {
       setSavingEstado(false);
+    }
+  }
+
+  function responderPreguntaFactura(generar) {
+    if (!generar) {
+      onClose?.();
+      return;
+    }
+    setPasoFactura("pago");
+  }
+
+  async function generarFacturaYDescargar() {
+    if (!dni.trim()) {
+      toast.error("Introduce el DNI/NIF del cliente.");
+      return;
+    }
+    setGenerandoFactura(true);
+    try {
+      const factura = await generarFactura(cita.id, { formaPago, dni });
+      generarFacturaPdf({
+        numero: factura.numero,
+        fecha: factura.fecha,
+        concepto: factura.concepto,
+        importe: factura.importe,
+        formaPago: factura.forma_pago,
+        nombreCliente: factura.nombre_cliente,
+        dniCliente: factura.dni_cliente,
+      });
+      toast.success(`Factura ${factura.numero} generada`);
+      onClose?.();
+    } catch (err) {
+      toast.error(err.message || "No se pudo generar la factura.");
+    } finally {
+      setGenerandoFactura(false);
     }
   }
 
@@ -102,6 +158,82 @@ export default function AppointmentDetail({ cita, onClose, onStatusChange }) {
     } finally {
       setSavingNota(false);
     }
+  }
+
+  if (pasoFactura === "preguntar") {
+    return (
+      <div className="flex flex-col items-center gap-4 py-6 text-center">
+        <span className="flex h-14 w-14 items-center justify-center rounded-full bg-sage-50 text-sage-600">
+          <FileText size={24} strokeWidth={1.8} />
+        </span>
+        <div>
+          <p className="text-[15px] font-semibold text-ink">Sesión completada</p>
+          <p className="mt-1 text-[13.5px] text-ink-muted">¿Quieres generar la factura de esta sesión?</p>
+        </div>
+        <div className="mt-2 flex w-full gap-2">
+          <Button variant="secondary" block onClick={() => responderPreguntaFactura(false)}>
+            Ahora no
+          </Button>
+          <Button variant="accent" block onClick={() => responderPreguntaFactura(true)}>
+            Generar factura
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  if (pasoFactura === "pago") {
+    return (
+      <div className="flex flex-col gap-4">
+        <div>
+          <p className="text-[15px] font-semibold text-ink">Datos de la factura</p>
+          <p className="mt-1 text-[13px] text-ink-muted">
+            Se generará a nombre de {patientFullName(paciente)}.
+          </p>
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">DNI/NIF del cliente</label>
+          <input
+            className="h-11 w-full rounded-xl border border-line bg-canvas-sunken/60 px-3.5 text-[14px] text-ink placeholder:text-ink-faint focus:border-sage-300 focus:bg-white"
+            value={dni}
+            onChange={(e) => setDni(e.target.value.toUpperCase())}
+            placeholder="12345678A"
+            autoFocus
+          />
+        </div>
+
+        <div>
+          <label className="mb-1.5 block text-[12.5px] font-medium text-ink-muted">Forma de pago</label>
+          <div className="grid grid-cols-3 gap-2">
+            {FORMAS_PAGO.map((opt) => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setFormaPago(opt.value)}
+                className={clsx(
+                  "h-11 rounded-xl border text-[13px] font-medium transition-colors duration-150",
+                  formaPago === opt.value
+                    ? "border-sage-500 bg-sage-50 text-sage-700"
+                    : "border-line text-ink-muted hover:border-line-strong"
+                )}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="mt-1 flex gap-2">
+          <Button variant="secondary" block disabled={generandoFactura} onClick={() => setPasoFactura("preguntar")}>
+            Atrás
+          </Button>
+          <Button variant="accent" block disabled={generandoFactura} onClick={generarFacturaYDescargar}>
+            {generandoFactura ? "Generando…" : "Generar factura"}
+          </Button>
+        </div>
+      </div>
+    );
   }
 
   return (

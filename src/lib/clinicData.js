@@ -36,6 +36,7 @@ export function toUiPaciente(row) {
     nombre: row.nombre,
     telefono: row.telefono || "",
     email: row.email || "",
+    dni: row.dni || "",
     fechaAlta: row.fecha_alta,
     notasGenerales: row.notas_generales || "",
     consentimientoRgpd: row.consentimiento_rgpd,
